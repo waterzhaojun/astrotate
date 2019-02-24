@@ -39,16 +39,17 @@ def main(mateid = args.mateid, mnum = args.malenum, fnum = args.femalenum,
 
     record = record[0]
     try:
-        father_title = record[2].split('-')[0]
+        father_title = namestyle.name_title(record[2])
     except:
         father_title = None
     
     try:
-        mother_title = record[3].split('-')[0]
+        mother_title = namestyle.name_title(record[3])
     except:
         mother_title = None
 
-    offspring_title = namestyle.name_title([father_title, mother_title])
+    offspring_title = namestyle.offspring_title([father_title, mother_title])
+    print('offspring title is %s.' % offspring_title)
 
     birthday = record[5]
     baseSeq = offspring_title+'-'+birthday.strftime('%y%m')+str(int(mateid[1:]))
