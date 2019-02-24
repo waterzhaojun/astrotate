@@ -1,0 +1,4 @@
+# Don't track files and content of these folders
+backup/
+__pycache__/
+test.py
