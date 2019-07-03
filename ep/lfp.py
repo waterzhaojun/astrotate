@@ -3,6 +3,8 @@ import scipy.signal
 import matplotlib.pyplot as plt
 # import seaborn as sns
 
+
+""" 
 f, psd = sp.signal.welch(rawdf[180300:360300], 100, nperseg=1000)
 f, psd = sp.signal.periodogram(rawdf[0:10000], 100, nfft=1000)
 
@@ -38,4 +40,4 @@ img = Image.fromarray(c, 'RGB')
 img.save('my.png')
 img.show()
 
-a, b, c = spectrogram(df1, )
+a, b, c = spectrogram(df1, ) """

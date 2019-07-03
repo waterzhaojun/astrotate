@@ -5,14 +5,22 @@ import numpy as np
 
 style_list = pd.DataFrame(columns=['parents_title', 'offspring_title'])
 style_list.loc[len(style_list), :] = [['IP3R2', 'B6.Cg-Edil3'], 'IP3R2.B6CE']
+style_list.loc[len(style_list), :] = [['Pirt-Cre', 'R26tdTomato'], 'Pirt-Cre-R26tdTomato']
+style_list.loc[len(style_list), :] = [['R26tdTomato', 'CGRP.Cre'], 'CGRP.Cre-R26tdTomato']
 # print(style_list)
 
 def name_title(fullname):
     tmp = fullname.split('-')
-    if len(tmp) > 1:
-        tmp = tmp[0:-1]
-    title = '-'.join(tmp)
+    if len(tmp) >1:
+        num_length = len(tmp[-1])
+        title = fullname[0:int(len(fullname)-num_length-1)]
+    else:
+        title=fullname
     return(title)
+
+def name_serialnum(fullname):
+    tmp = fullname.split('-')
+    return(tmp[-1])
 
 def different_strain_title(a, b):
     title = np.array([])
@@ -21,6 +29,7 @@ def different_strain_title(a, b):
         if (a in style_list.loc[i, 'parents_title']) & (b in style_list.loc[i, 'parents_title']):
             title = np.append(title, style_list.loc[i, 'offspring_title'])
 
+    print(title)
     if len(title)>1:
         raise ValueError('You have multi rows fit your parents title. Please check the style_list.')
     else:
@@ -45,8 +54,3 @@ def offspring_title(title_list):
 
     return(offspring_title)
 
-
-a = name_title('IP3R2-18094102')
-b = name_title('B6.Cg-Edil3-1810XX02')
-
-print(offspring_title([a,b]))
