@@ -1,0 +1,7 @@
+{
+    "root": "/Users/Melody/OneDrive/WorkingFolder/EP", 
+    "data_folder": "/Users/Melody/Documents/expdata/EP", 
+    "host": "localhost", 
+    "dbname": "levy_lab_data", 
+    "username": "postgres"
+}

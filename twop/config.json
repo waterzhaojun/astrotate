@@ -1,0 +1,11 @@
+{
+    "root": "/Users/Melody/OneDrive/WorkingFolder/2P", 
+    "data_folder": "/Users/Melody/Documents/expdata/2P", 
+    "host": "localhost", 
+    "dbname": "levy_lab_data", 
+    "exp_table": "exp_2p_invivo_system",
+    "data_table": "data_2p",
+    "username": "postgres",
+
+    "running_rate": 15
+}

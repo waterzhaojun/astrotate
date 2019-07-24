@@ -1,0 +1,57 @@
+{
+    "single_neuron": [
+        {
+            "id": 1,
+            "neuron_info": {
+                "neuron_type": "C",
+                "ap_delay": 9.0,
+                "mech_threshold": 3.84,
+                "mech_response_type": "slowAdp",
+                "spontaneous": "Y",
+                "cortex_RF": 1,
+                "sinus_RF": 0,
+                "neuron_ongoing_activity_baseline": 0.000443,
+                "TH_baseline": 0.833,
+                "STH_baseline": 6.0
+            },
+            "spon": {
+                "result": {
+                    "2": {
+                        "pinprick_activation": "N",
+                        "neuron_immediate_activation": "N",
+                        "neuron_delay_activation": "Y",
+                        "neuron_delay_activation_lasting": 45,
+                        "neuron_activation_baseline_average": 0.000277778,
+                        "neuron_activation_baseline_CI": 0.000544434
+                    }
+                },
+                "file_path": "single_neuron_spontaneous_1.npy",
+                "treat_point": {
+                    "0": 0,
+                    "1": 9,
+                    "2": 24
+                }
+            },
+            "mech": {
+                "result": {
+                    "2": {
+                        "neuron_sensitization_th_whe": "Y",
+                        "neuron_sensitization_th_lasting": 30.0,
+                        "neuron_sensitization_sth_whe": "N",
+                        "th_baseline": 1.1,
+                        "th_ci": 0.366675686,
+                        "sth_baseline": 8.7,
+                        "sth_ci": 0.908797913
+                    }
+                },
+                "file_path": "single_neuron_mech_1.npy",
+                "treat_point": {
+                    "0": 0,
+                    "1": 3,
+                    "2": 8
+                }
+            },
+            "note": ""
+        }
+    ],
+}
