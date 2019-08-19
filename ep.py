@@ -5,6 +5,7 @@ Created on Fri Aug 16 14:17:59 2019
 @author: jzhao1
 """
 import os
+
 import pandas as pd
 import numpy as np
 from . import array
@@ -54,6 +55,39 @@ def treatment(treatlist):
     for i in range(len(treatlist)):
         treat[str(i)] = treatlist[i]
     return(treat)
+
+def animal(animalid, gender, weight, brain_bloom=False, sub_bleeding=False, ever_search_neuron=True,strain='SD',
+          give_oxygen=True, species='rat'):
+    animaldict = {}
+    
+    animaldict['id'] = animalid
+    
+    if gender.lower() in ['m', 'male']:
+        gender = 'M'
+    elif gender.lower() in ['f', 'female']:
+        gender = 'F'
+    animaldict['gender'] = gender
+    
+    animaldict['weight'] = int(weight)
+    
+    animaldict['brain_bloom'] = ['N', 'Y'][int(brain_bloom)]
+    animaldict['sub_bleeding'] = ['N', 'Y'][int(sub_bleeding)]
+    animaldict['ever_search_neuron'] = ['N', 'Y'][int(ever_search_neuron)]
+    animaldict['give_oxygen'] = ['N', 'Y'][int(give_oxygen)]
+    
+    if strain in ['SD', 'C57']:
+        animaldict['strain'] = strain
+    
+    if species in ['rat', 'mouse']:
+        animaldict['species'] = species
+    
+    if species == 'rat' and strain not in ['SD']:
+        raise Exception('please check your species and strain')
+    
+    if species == 'mouse' and strain not in ['C57']:
+        raise Exception('please check your species and strain')
+        
+    return(animaldict)
 
 """    
 def array_timepoints_based_on_treatment(timepoint_df, treatment_tp):
