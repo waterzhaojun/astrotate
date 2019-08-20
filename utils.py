@@ -14,3 +14,6 @@ def readjson(path):
     return(data)
 
 
+def writejson(path, data):
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=4)
