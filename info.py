@@ -3,7 +3,8 @@ import os
 
 def getInfoList(rootPath):
     folders = os.listdir(rootPath)
-    folders = [os.path.join(rootPath, x) for x in folders if os.path.isdir(x)]
+    folders = [os.path.join(rootPath, x) for x in folders]
+    folders = [x for x in folders if os.path.isdir(x)]
     animalfolders = []
     for f in folders:
         tmp = [os.path.join(f, x, 'info.json') for x in os.listdir(f)]
@@ -16,9 +17,12 @@ def getListWithExpType(rootPath, expType):
     infoList = getInfoList(rootPath)
     finalList = []
     for i in infoList:
-        tmp = utils.readjson(i)
-        if expType in tmp.keys():
-            finalList.append(i)
+        try:
+            tmp = utils.readjson(i)
+            if expType in tmp.keys():
+                finalList.append(i)
+        except:
+            print('%s has problem, fail to load' % i)
     return(finalList)
 
 def getInfoContent(rootPath, keyarray):
@@ -48,15 +52,16 @@ def checkTreatmentDrug(treatArrayList):
                 pass
     return(finalList)
 
-def drugTreatContent(info):
+
+def treatmentMethod(info, method):
     treatment = info['treatment']
     thekey = []
     thedict = []
     for key, value in treatment.items():
-        if value['method'] == 'drug apply':
+        if value['method'] == method:
             thekey.append(key)
             thedict.append(value)
     if len(thekey) != 1:
-        raise Exception('No drug treatment or more than 1 drug treatment')
+        raise Exception('No or more than 1 this method treatment')
     return(thekey[0], thedict[0])
 
