@@ -12,10 +12,18 @@ from . import array
 from . import utils
 import json
 
-def check_channel_name(exp_folder):
+def check_channel_name(exp_folder, trialNum = None):
     files = os.listdir(exp_folder)
     files = [x for x in files if ((x[-4:] == '.txt') & (len(x.split('-'))>1))]
-    file = os.path.join(exp_folder, files[-1])
+    if trialNum == None:
+        file = os.path.join(exp_folder, files[-1])
+    else:
+        tmp = [x for x in files if x.split('-')[-1][:-4] == str(trialNum)]
+        if len(tmp) == 1:
+            file = os.path.join(exp_folder, tmp[0])
+        else:
+            raise Exception('There are %d files named %s' % (len(tmp), str(trialNum)))
+
     df = pd.read_csv(file, nrows = 1, sep = '\t').columns.values
     print(df)
     
@@ -152,4 +160,4 @@ def treatment_drug(activate_drug, concentration, apply_method):
     treat['concentration'] = concentration
     treat['apply_method'] = apply_method
 
-# ===============================================================================================        
+# =============================================================================================== 
