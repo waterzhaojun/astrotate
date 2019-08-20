@@ -3,13 +3,13 @@ import os
 
 def getInfoList(rootPath):
     folders = os.listdir(rootPath)
-    folders = [os.path.join(rootPath, x) for x in folders]
+    folders = [os.path.join(rootPath, x) for x in folders if ]
     animalfolders = []
     for f in folders:
         tmp = [os.path.join(f, x, 'info.json') for x in os.listdir(f)]
         animalfolders = animalfolders + tmp
     
-    animalfolders = [x for x in animalfolders if os.path.exists(x)]
+    animalfolders = [x for x in animalfolders if os.path.isdir(x)]
     return(animalfolders)
 
 def getListWithExpType(rootPath, expType):
