@@ -61,7 +61,10 @@ def treatmentMethod(info, method):
         if value['method'] == method:
             thekey.append(key)
             thedict.append(value)
-    if len(thekey) != 1:
+    if len(thekey) == 0:
+        thekey = [None]
+        thedict = [{}]
+    elif len(thekey) > 1:
         raise Exception('No or more than 1 this method treatment')
     return(thekey[0], thedict[0])
 
