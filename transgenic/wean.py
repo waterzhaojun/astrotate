@@ -11,7 +11,7 @@ parser.add_argument('--malenum', required=True, type = int, help='young male mic
 parser.add_argument('--femalenum', required=True, type = int, help='yound female mice number')
 parser.add_argument('--malecage', required = True, help='which cage yound males go')
 parser.add_argument('--femalecage', required=True, help='which cage yound females go')
-parser.add_argument('--keepMate', default = False, help='whether still mating')
+parser.add_argument('--keepMate', default = True, help='whether still mating')
 
 args = parser.parse_args()
 
@@ -76,9 +76,9 @@ def main(mateid = args.mateid, mnum = args.malenum, fnum = args.femalenum,
     for i in range(len(sexSeq)):
         tmp_newname = baseSeq+'%02d'%(i)
         insertcommand = """
-        INSERT INTO transgenic_animal_log (animalid, cageid, dob, gender, birth_mate_id, full_name)
-        VALUES ('{}', '{}', '{}', '{}', '{}', '{}')
-        """.format(tmp_newname, cageSeq[i], record['birthday'], sexSeq[i], record['mateid'], tmp_newname)
+        INSERT INTO transgenic_animal_log (animalid, cageid, dob, gender, birth_mate_id)
+        VALUES ('{}', '{}', '{}', '{}', '{}')
+        """.format(tmp_newname, cageSeq[i], record['birthday'], sexSeq[i], record['mateid'])
 
         cur = conn.cursor()
         cur.execute(insertcommand)

@@ -4,8 +4,6 @@ import json
 import util
 
 parser = argparse.ArgumentParser(description='Create a mate record for table transgenic_mouse_breeding.')
-# parser.add_argument('--dad', required=True, help='Father id')
-# parser.add_argument('--mom', required=True, help='Mother id')
 parser.add_argument('--cageid', required=True, help='Cage id')
 
 args = parser.parse_args()

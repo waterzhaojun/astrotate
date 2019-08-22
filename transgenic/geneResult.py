@@ -48,3 +48,4 @@ if __name__ == "__main__":
 
         print("%s %s's gene is %s" % (cageid, ear_punch, gene))
 
+    os.remove(resultfile)
