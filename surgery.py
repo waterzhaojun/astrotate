@@ -23,9 +23,9 @@ def init_animal(folder):
     else:
         animal['info'] = {}
         animal['note'] = ''
-        animal['info']['strain'] = select('Choose animal strain: ', ['rat', 'mouse'])
-        animal['info']['gender'] = select('Choose animal gender: ', ['M', 'F'])
-        animal['info']['birthday'] = format_date(input('Animal birthday (format month-day-year): '))
+        animal['info']['strain'] = utils.select('Choose animal strain: ', ['rat', 'mouse'])
+        animal['info']['gender'] = utils.select('Choose animal gender: ', ['M', 'F'])
+        animal['info']['birthday'] = utils.format_date(input('Animal birthday (format month-day-year): '))
         print(animal)
         utils.writejson(outputpath, animal)
         
