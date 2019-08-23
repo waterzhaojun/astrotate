@@ -2,7 +2,9 @@
 """
 Created on Fri Aug 16 14:27:39 2019
 
-@author: jzhao1
+@author: Jun Zhao
+
+This file contains functions that are commonly used in different place.
 """
 
 import json
@@ -37,3 +39,15 @@ def format_date(string, outputformat = '%m-%d-%Y'):
     
     strdate = datetime.strptime(string, dateformat).strftime(outputformat)
     return(strdate)
+
+def select(hellowords, array, **kwargs):
+    print(hellowords)
+    for i in range(len(array)):
+        print('%d ---> %s' % (i, array[i]))
+    x = input('Select by idx: ')
+    final = array[int(x)]
+    try:
+        final = final + ' (' + kwargs['extra_note'] + ')'
+    except:
+        pass
+    return(final)
