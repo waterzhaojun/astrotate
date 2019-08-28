@@ -10,6 +10,7 @@ This file contains functions that are commonly used in different place.
 import json
 from datetime import datetime
 import numpy as np
+import yaml
 
 
 def readjson(path):
@@ -51,3 +52,43 @@ def select(hellowords, array, **kwargs):
     except:
         pass
     return(final)
+
+def select_from_dict(hellowords, dict, **kwargs):
+    print(hellowords)
+    for key, value in dict.items():
+        print('%s ---> %s' % (str(key), str(value)))
+    y = input('Select by key: ')
+
+    if 'allow_array' in kwargs:
+        final = y.replace(' ', '').split(',')
+    else:
+        final = [y]
+
+    if 'return_key' not in kwargs:
+        try:
+            final = [dict[x] for x in final]
+        except:
+            final = [dict[int(x)] for x in final]
+
+    if 'extra_note' in kwargs:
+        final = [x + ' (' + kwargs['extra_note'] + ')' for x in y]
+
+    if 'allow_array' not in kwargs:
+        final = final[0]
+
+    return(final)
+
+
+def load_config():
+    with open('config.yml', 'r') as f:
+        config = yaml.safe_load(f)
+    return(config)
+
+
+def projectArrayInput():
+    config = load_config()
+    projects = config['projects']
+    result = select_from_dict('Choose involved projects', projects, allow_array=True, return_key=True)
+    result = [int(x) for x in result]
+    result.sort()
+    return(result)
