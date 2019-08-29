@@ -11,6 +11,7 @@ import json
 from datetime import datetime
 import numpy as np
 import yaml
+from shutil import copyfile
 
 
 def readjson(path):
@@ -78,13 +79,6 @@ def select_from_dict(hellowords, dict, **kwargs):
 
     return(final)
 
-
-def load_config():
-    with open('config.yml', 'r') as f:
-        config = yaml.safe_load(f)
-    return(config)
-
-
 def projectArrayInput():
     config = load_config()
     projects = config['projects']
@@ -92,3 +86,21 @@ def projectArrayInput():
     result = [int(x) for x in result]
     result.sort()
     return(result)
+
+
+# ====================================================================================================
+# ===== config of the system =========================================================================
+# ====================================================================================================
+def load_config():
+    with open('config.yml', 'r') as f:
+        config = yaml.safe_load(f)
+    return(config)
+
+def check_config():
+    print(load_config())
+
+def download_config(path):
+    copyfile('config.yml', path)
+
+def upload_config(path):
+    copyfile(path, 'config.yml')

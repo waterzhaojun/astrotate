@@ -2,7 +2,13 @@
 
 
 projects:
-  1: test
-  2: test
-  3: test
-  4: TG neuron activation and sensitization and the involvement of astrocyte
+    1: test
+    2: test
+    3: test
+    4: TG neuron activation and sensitization and the involvement of astrocyte
+
+system_path:
+    root: '/Users/melodywei/Documents/astrotate'
+    twophoton: '2P'
+    electrophysiology: 'EP'
+    surgery: 'SURG'
