@@ -63,11 +63,11 @@ def aavinject(*args, **kwargs):
 
     return(treatment)
 
-def csd(time = '', apply_method = 'pinprick'):
+def csd():
     treat = {'method': 'CSD'}
     csd_method_list = ['pinprick', 'KCl']
 
-    tmp = input('CSD time, format as xx:xx ')
+    tmp = input('CSD time, format as xx:xx (Press ENTER to ignore this step): ')
     if tmp != '':
         treat['time'] = tmp
     
@@ -78,7 +78,7 @@ def csd(time = '', apply_method = 'pinprick'):
 def baseline():
     return({"method": "baseline"})
     
-def drug(activate_drug, concentration, apply_method, config):
+def drug(config):
     treat = {'method': 'drug apply'}
 
     apply_method = ['ip', 'topic', 'subcutaneous', 'iv', 'cortex', 'ic', 'icv']

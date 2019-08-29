@@ -13,22 +13,32 @@ def folder_format(animalid, date, run):
     out = animalid + '_' + str(date) + '_run' + str(run)
     return(out)
 
-def init_exp(animalid, date, run = None):
-    exp = {}
-    exp['project'] = utils.projectArrayInput()
+def init_exp(animalid, dateid, config):
+    root = os.path.join(config.system_path['root'], config.system_path['twophoton'])
+    animalfolder = os.path.join(root, animalid)
+    if not os.path.exists(animalfolder):
+        os.mkdir(animalfolder)
+    expfile = os.path.join(animalfolder, str(dateid)+'.json')
+    if not os.path.exists(expfile):
+        exp = {}
+        exp['project'] = utils.projectArrayInput(config)
+        exp['treatment'] = {}
+        exp['data'] = []
+        utils.writejson(expfile, exp)
 
-    exp['treatment'] = {}
-    exp['data'] = []
-    return(exp)
-
-def add_treatment(animalid, date, newtreatment, config):
+def add_treatment(animalid, date, newtreatment, config, allowRepeatTreat = False):
     # config = utils.load_config()
     path = os.path.join(config.system_path['root'], config.system_path['twophoton'], animalid, str(date)+'.json')
     exp = utils.readjson(path)
     keys = exp['treatment'].keys()
-    newkey = str(len(keys))
-    exp['treatment'][newkey] = newtreatment
-    utils.writejson(path, exp)
+    methods = [exp['treatment'][x]['method'] for x in keys]
+
+    if (newtreatment['method'] in methods) and (not allowRepeatTreat):
+        print('You sure you want to add this treatment? If yes, run this function again and set allowRepeatTreat = True')
+    else:
+        newkey = str(len(keys))
+        exp['treatment'][newkey] = newtreatment
+        utils.writejson(path, exp)
 
 def add_data(animalid, date, newdata, config):
     # config = utils.load_config()
