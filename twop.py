@@ -98,7 +98,7 @@ def input_situation(animal, date):
     
 def input_data(animalid, date, run, datatype):
     data = {}
-    datatype = select('Choose data type: ', datatype)
+    datatype = utils.select('Choose data type: ', datatype)
     if datatype == 'astrocyte_event':
         data['path'] = folder_format(animalid, date, run)+'_AstrocyteEvent.mat'
         
