@@ -5,7 +5,7 @@ So far I set them by different function but finally I may need to put them all i
 
 """
 from datetime import datetime
-import utils
+from . import utils
 
 aav_list = [
     'AAV5.GfaABC1D.cytoGCaMP6f.SV40',
@@ -27,7 +27,15 @@ inject_tool_list = [
     'insolin syringe'
 ]
 
+
+
+# ================================================================================================================================
+# ==== This part includes all kinds of treatment. It will return a dict containing all parameters ================================
+# ================================================================================================================================
+
 # aavinject is to create a dictionary 
+
+
 def aavinject(*args, **kwargs):
 
     treatment = {'method': 'virus inject'}
@@ -55,3 +63,25 @@ def aavinject(*args, **kwargs):
 
     return(treatment)
 
+def csd(time = '', apply_method = 'pinprick'):
+    treat = {'method': 'CSD'}
+    csd_method_list = ['pinprick', 'KCl']
+
+    tmp = input('CSD time, format as xx:xx ')
+    if tmp != '':
+        treat['time'] = tmp
+    
+    treat['apply_method'] = utils.select('Choose CSD method: ', csd_method_list)
+
+    return(treat)
+        
+def baseline():
+    return({"method": "baseline"})
+    
+def drug(activate_drug, concentration, apply_method):
+    treat = {'method': 'drug apply'}
+
+    apply_method = ['ip', 'topic', 'subcutaneous', 'iv']
+    treat['activate_drug'] = activate_drug
+    treat['concentration'] = input('Drug concentration (unit is mM, input a number): ')+'mM'
+    treat['apply_method'] = utils.select('Choose drug apply method: ', apply_method)

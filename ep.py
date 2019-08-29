@@ -204,31 +204,3 @@ def treatmentMethod(info, method):
     return(thekey[0], thedict[0])
 
     
-
-# define all kinds of treatment in this section =================================================
-# This part need finally transfer to treatment.py ==============================================
-# ===============================================================================================        
-def treatment_csd(time = '', apply_method = 'pinprick'):
-    treat = {}
-    treat['method'] = 'CSD'
-    if time != '':
-        treat['time'] = time
-        
-    if apply_method == 'pinprick':
-        treat['apply_method'] = apply_method
-    else:
-        raise Exception('This CSD method is not in the list')
-        
-    return(treat)
-        
-def treatment_baseline():
-    return({"method": "baseline"})
-    
-def treatment_drug(activate_drug, concentration, apply_method):
-    treat = {}
-    treat['method'] = 'drug apply'
-    treat['activate_drug'] = activate_drug
-    treat['concentration'] = concentration
-    treat['apply_method'] = apply_method
-
-# =============================================================================================== 

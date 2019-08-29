@@ -1,4 +1,4 @@
-# config parameters for lab data system
+# config parameters for lab data system.
 
 
 projects:
@@ -12,3 +12,6 @@ system_path:
     twophoton: '2P'
     electrophysiology: 'EP'
     surgery: 'SURG'
+
+# list all the drug tested in your porjects and need to use when you update the experiment records.
+drug_list: ['']

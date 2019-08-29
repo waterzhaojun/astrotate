@@ -1,8 +1,7 @@
 import os
-
 import pandas as pd
 import numpy as np
-import array, utils, treatment
+from . import array, utils, treatment
 import json
 
 objective = {'Nikon': ['16X']}
