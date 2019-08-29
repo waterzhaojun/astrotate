@@ -78,12 +78,12 @@ def csd(time = '', apply_method = 'pinprick'):
 def baseline():
     return({"method": "baseline"})
     
-def drug(activate_drug, concentration, apply_method):
+def drug(activate_drug, concentration, apply_method, config):
     treat = {'method': 'drug apply'}
 
     apply_method = ['ip', 'topic', 'subcutaneous', 'iv', 'cortex', 'ic', 'icv']
-    config = utils.load_config()
-    treat['activate_drug'] = utils.select('Choose treated drug: ', config['drug_list'])
+    # config = utils.load_config()
+    treat['activate_drug'] = utils.select('Choose treated drug: ', config.drug_list)
     treat['concentration'] = input('Drug concentration (unit is mM, input a number): ')+'mM'
     treat['apply_method'] = utils.select('Choose drug apply method: ', apply_method)
     treat['duration'] = input('How long it treated (unit is min, input int): ')+'min'

@@ -11,9 +11,8 @@ import json
 from datetime import datetime
 import numpy as np
 import yaml
-from shutil import copyfile
+# from shutil import copyfile
 import importlib
-
 
 def readjson(path):
     # read a json file
@@ -95,37 +94,11 @@ def select_from_dict(hellowords, dict, **kwargs):
 
     return(final)
 
-def projectArrayInput():
-    config = load_config()
-    projects = config['projects']
+def projectArrayInput(config):
+    projects = config.projects
     result = select_from_dict('Choose involved projects', projects, allow_array=True, return_key=True)
     result = [int(x) for x in result]
     result.sort()
     return(result)
 
 
-# ====================================================================================================
-# ===== config of the system =========================================================================
-# ====================================================================================================
-# config file is important for the database setup. This file exist in the root folder of the module.
-# To update the config file, you can download the config file by using download_config function.
-# After revise, use upload_config file to overwrite the old one. Keep the one you used for update as 
-# every time after update the module, you have to upload the config again.
-def load_config():
-    # load config file. The config file can be used for setting up.
-    with open('config.yml', 'r') as f:
-        config = yaml.safe_load(f)
-    return(config)
-
-def check_config():
-    # Check your config file
-    print(load_config())
-
-def download_config(path):
-    # Download the config file from the module root folder
-    copyfile('config.yml', path)
-
-def upload_config(path):
-    # upload the config file to module root folder.
-    # the path is where your file locally is.
-    copyfile(path, 'config.yml')

@@ -21,18 +21,18 @@ def init_exp(animalid, date, run = None):
     exp['data'] = []
     return(exp)
 
-def add_treatment(animalid, date, newtreatment):
-    config = utils.load_config()
-    path = os.path.join(config['system_path']['root'], config['system_path']['twophoton'], animalid, str(date)+'.json')
+def add_treatment(animalid, date, newtreatment, config):
+    # config = utils.load_config()
+    path = os.path.join(config.system_path['root'], config.system_path['twophoton'], animalid, str(date)+'.json')
     exp = utils.readjson(path)
     keys = exp['treatment'].keys()
     newkey = str(len(keys))
     exp['treatment'][newkey] = newtreatment
     utils.writejson(path, exp)
 
-def add_data(animalid, date, newdata):
-    config = utils.load_config()
-    path = os.path.join(config['system_path']['root'], config['system_path']['twophoton'], animalid, str(date)+'.json')
+def add_data(animalid, date, newdata, config):
+    # config = utils.load_config()
+    path = os.path.join(config.system_path['root'], config.system_path['twophoton'], animalid, str(date)+'.json')
     exp = utils.readjson(path)
     exp['data'].append(newdata)
     utils.writejson(path, exp)
@@ -81,9 +81,9 @@ def input_scanbox():
     
     return(fin)
     
-def input_situation(animal, date):
-    config = utils.load_config()
-    twop = os.path.join(config['system_path']['root'], config['system_path']['twophoton'], animal, str(date)+'.json')
+def input_situation(animal, date, config):
+    # config = utils.load_config()
+    twop = os.path.join(config.system_path['root'], config.system_path['twophoton'], animal, str(date)+'.json')
     record = utils.readjson(twop)
     tmp = record['treatment']
     t = []

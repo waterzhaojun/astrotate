@@ -57,7 +57,7 @@ def get_array(folderPath, startTrial, endTrial, channel, scanRate, outputRate, t
         present_length = present_length + len(values)
     return(data, treat_point)
     
-def treatment(treatlist):
+def treatmentList(treatlist):
     treat = {}
     for i in range(len(treatlist)):
         treat[str(i)] = treatlist[i]
