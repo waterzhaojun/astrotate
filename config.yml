@@ -14,4 +14,4 @@ system_path:
     surgery: 'SURG'
 
 # list all the drug tested in your porjects and need to use when you update the experiment records.
-drug_list: ['']
+drug_list: ['ACSF', 'AL8810', 'L-NAME', 'oxamate', 'L-AA', 'GAP19', 'TTX', 'BIBN', 'HET', 'DAB', 'Napro', 'FLCT', 'PPADS', 'Ozagrel', 'Levcro', 'soup', 'A10606120', 'Prob', 'TNP-ATP', 'saline', 'CBN4', 'SNP', 'GAP26', 'SC560', 'AL8810']

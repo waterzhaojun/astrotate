@@ -81,7 +81,22 @@ def baseline():
 def drug(activate_drug, concentration, apply_method):
     treat = {'method': 'drug apply'}
 
-    apply_method = ['ip', 'topic', 'subcutaneous', 'iv']
-    treat['activate_drug'] = activate_drug
+    apply_method = ['ip', 'topic', 'subcutaneous', 'iv', 'cortex', 'ic', 'icv']
+    config = utils.load_config()
+    treat['activate_drug'] = utils.select('Choose treated drug: ', config['drug_list'])
     treat['concentration'] = input('Drug concentration (unit is mM, input a number): ')+'mM'
     treat['apply_method'] = utils.select('Choose drug apply method: ', apply_method)
+    treat['duration'] = input('How long it treated (unit is min, input int): ')+'min'
+
+    if treat['apply_method'] == 'topic': # set parameters for topic treatment
+        tmp = input('How long it recover after wash the drug (unit is min, input int, Press ENTER for 0): ')+'min'
+        if tmp == '':
+            tmp = '0'
+        treat['recovery'] = tmp+'min'
+
+    if treat['apply_method'] == 'iv': # set parameters for iv treatment
+        treat['apply_speed'] = input('iv drug injection speed (unit is ml/min, input number): ') + 'ml/min'
+
+    return(treat)
+
+
