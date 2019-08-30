@@ -32,6 +32,11 @@ class Config:
     #     # Download the config file from the module root folder
     #     shutil.copyfile('config.yml', path)
 
+class Experiment:
+    def __init__(self, config):
+        self.root = config.system_path['root']
+        
+
 def load_config(path):
     # load config file. The config file can be used for setting up.
     with open(path, 'r') as f:

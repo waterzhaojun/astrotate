@@ -11,7 +11,7 @@ parser.add_argument('--malenum', required=True, type = int, help='young male mic
 parser.add_argument('--femalenum', required=True, type = int, help='yound female mice number')
 parser.add_argument('--malecage', required = True, help='which cage yound males go')
 parser.add_argument('--femalecage', required=True, help='which cage yound females go')
-parser.add_argument('--keepMate', default = True, help='whether still mating')
+parser.add_argument('--keepMate', help='whether still mating', action='store_true')
 
 args = parser.parse_args()
 

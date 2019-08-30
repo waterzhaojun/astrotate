@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
-from . import array, utils, treatment
+from . import array, utils, treatment, config as cg
 import json
 
 objective = {'Nikon': ['16X']}
@@ -111,4 +111,9 @@ def input_data(animalid, date, run, datatype):
     if datatype == 'astrocyte_event':
         data['path'] = folder_format(animalid, date, run)+'_AstrocyteEvent.mat'
         
-    
+class Exp2P(cg.Experiment):
+    def __init__(self, config, animalid, dateid):
+        super().__init__(self, config)
+        self.mainfolder = os.path.join(self.root, config.system_path['twophoton'])
+        self.animalfolder = os.path.join(self.mainfolder, animalid)
+        self.expfile = os.path.join(self.animalfolder, str(dateid)+'.json')
