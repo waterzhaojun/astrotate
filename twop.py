@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from . import array, utils, treatment, config as cg
 import json
+import scipy.io as sio
 
 objective = {'Nikon': ['16X']}
 magnitude_list = [0.8, 1, 2.0, 2.4, 4.0, 4.8, 5.7]
@@ -104,7 +105,11 @@ def input_situation(animal, date, config):
     s['treatment'] = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
     s['time_after_treatment'] = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
     return(s)
+
+def readAquaData(path):
+    mfile = sio.loadmat(path)
     
+
 def input_data(animalid, date, run, datatype):
     data = {}
     datatype = utils.select('Choose data type: ', datatype)
