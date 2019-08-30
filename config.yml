@@ -8,7 +8,7 @@ projects:
     4: TG neuron activation and sensitization and the involvement of astrocyte
 
 system_path:
-    root: '/content/drive/My Drive/EXPDATA'
+    root: 'C:\Users\jzhao1\Documents\expdata'
     twophoton: '2P'
     electrophysiology: 'EP'
     surgery: 'SURG'

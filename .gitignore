@@ -1,4 +1,5 @@
 # Don't track files and content of these folders
+config.yml
 backup/
 __pycache__/
 test.py
