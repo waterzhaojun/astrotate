@@ -96,7 +96,8 @@ def astrocyte_event_aqua_ana_between_groups(result1, result2, group_titles):
         ax.legend(group_titles)
         plt.show()
         print(p)
-
+        print('=======================================================')
+        
     
 
 def input_data_info(animalid, date, run, datatype):
