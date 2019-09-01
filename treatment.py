@@ -6,7 +6,7 @@ So far I set them by different function but finally I may need to put them all i
 """
 from datetime import datetime
 # from . import utils
-import utils
+import astrotate.utils as utils
 
 aav_list = [
     'AAV5.GfaABC1D.cytoGCaMP6f.SV40',
