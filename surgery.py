@@ -10,7 +10,7 @@ Steps:
 import numpy as np
 import os
 from datetime import datetime
-from . import utils
+from astrotate import utils
 
 
 def init_animal(folder):
