@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 # from . import array, utils, treatment, config as cg
-import array, utils, treatment, config as cg
+from astrotate import array, utils, treatment, config as cg
 import json
 import scipy.stats as stats
 from datetime import datetime
