@@ -9,8 +9,12 @@ from datetime import datetime
 import astrotate.utils as utils
 
 aav_list = [
-    'AAV5.GfaABC1D.cytoGCaMP6f.SV40',
-    'AAV2/5-GFAP-hM3D(Gq)-m-cherry'
+    'AAV5.CAG.GCaMP6s.WPRE.SV40',
+    'AAV1.CAG.GCaMP6s.WPRE',
+    'AAV5.GfaABC1D.cyto.GCaMP6f.SV40',
+    'AAV-PHP.S CA6.6PP',
+    'AAV2/5.GFAP.hM3D(Gq).mCherry',
+    'pGP.AAV.syn.JGCaMP7s.WPRE'
 ]
 
 inject_method_list = [
