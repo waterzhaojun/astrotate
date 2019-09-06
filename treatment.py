@@ -104,4 +104,13 @@ def drug(config):
 
     return(treat)
 
-
+def optoStimulation():
+    treat = {'method': 'opto stimulation'}
+    opto_calibration = 5
+    treat['duration']: input('Stimulation duration (sec, input an int): ')+'sec'
+    treat['power']: input('opto stimulation power. (input a fraction number):' ) * opto_calibration
+    treat['stimulation_type']: utils.select('Choose stimulation type: ', ['continue', 'discrete'])
+    if treat['stimulation_type'] == 'discrete':
+        treat['freq']: input('stimulation frequency. unit is Hz. input a float number: ')+'Hz'
+        treat['on_duration']: input('In each loop, stimulation on duration, unit is sec. input a float number: ')+'sec'
+    return(treat)

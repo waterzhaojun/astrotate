@@ -6,8 +6,8 @@ def get_config():
         config = json.load(f)
     return(config)
 
-def connect_server():
-    config = get_config()
+def connect_server(servername = 'elephantsql'):
+    config = get_config()[servername]
     
     if config['password'] is None:
         config['password'] = input('Input password: ')
