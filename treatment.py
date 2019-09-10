@@ -112,8 +112,8 @@ def optoStimulation():
         return(t)
 
     treat = {'method': 'opto stimulation'}
-    treat['duration']: input('Stimulation duration (sec, input an int): ')+'sec'
-    treat['power']: __power__(int(input('opto stimulation power. (input an int number):' )))
+    treat['duration'] = input('Stimulation duration (sec, input an int): ')+'sec'
+    treat['power'] = __power__(int(input('opto stimulation power. (input an int number):' )))
 
     treat['stimulation_type'] = utils.select('Choose stimulation type: ', ['continue', 'discrete'])
     if treat['stimulation_type'] == 'discrete':
