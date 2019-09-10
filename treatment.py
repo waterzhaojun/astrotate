@@ -105,10 +105,16 @@ def drug(config):
     return(treat)
 
 def optoStimulation():
+
+    def __power__(value):
+        t = {'value': value}
+        t['power_measure_device'] = 'EXTECH EasyView 33'
+        return(t)
+
     treat = {'method': 'opto stimulation'}
-    opto_calibration = 5
     treat['duration']: input('Stimulation duration (sec, input an int): ')+'sec'
-    treat['power']: input('opto stimulation power. (input a fraction number):' ) * opto_calibration
+    treat['power']: __power__(int(input('opto stimulation power. (input an int number):' )))
+
     treat['stimulation_type']: utils.select('Choose stimulation type: ', ['continue', 'discrete'])
     if treat['stimulation_type'] == 'discrete':
         treat['freq']: input('stimulation frequency. unit is Hz. input a float number: ')+'Hz'
