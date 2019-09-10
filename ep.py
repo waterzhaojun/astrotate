@@ -8,7 +8,7 @@ import os
 
 import pandas as pd
 import numpy as np
-from . import array, utils, treatment
+from astrotate import array, utils, treatment
 import json
 
 def check_channel_name(exp_folder, trialNum = None):

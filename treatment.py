@@ -120,3 +120,7 @@ def optoStimulation():
         treat['freq']: input('stimulation frequency. unit is Hz. input a float number: ')+'Hz'
         treat['on_duration']: input('In each loop, stimulation on duration, unit is sec. input a float number: ')+'sec'
     return(treat)
+
+def purfusion():
+    treat = {'method': 'PFA purfusion'}
+    return(treat)
