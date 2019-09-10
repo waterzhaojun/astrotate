@@ -115,7 +115,7 @@ def optoStimulation():
     treat['duration']: input('Stimulation duration (sec, input an int): ')+'sec'
     treat['power']: __power__(int(input('opto stimulation power. (input an int number):' )))
 
-    treat['stimulation_type']: utils.select('Choose stimulation type: ', ['continue', 'discrete'])
+    treat['stimulation_type'] = utils.select('Choose stimulation type: ', ['continue', 'discrete'])
     if treat['stimulation_type'] == 'discrete':
         treat['freq']: input('stimulation frequency. unit is Hz. input a float number: ')+'Hz'
         treat['on_duration']: input('In each loop, stimulation on duration, unit is sec. input a float number: ')+'sec'
