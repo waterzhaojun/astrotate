@@ -10,7 +10,7 @@ Steps:
 import numpy as np
 import os
 from datetime import datetime
-from astrotate import utils
+from astrotate import utils, config
 
 
 def init_animal(folder):
@@ -29,7 +29,9 @@ def init_animal(folder):
         print(animal)
         utils.writejson(outputpath, animal)
         
-def add_treatment(animalid, folder, treatment):
+def add_treatment(animalid, treatment):
+    cg = config.Config()
+    folder = os.path.join(cg.root)
     path = os.path.join(folder, animalid+'.json')
     record = utils.readjson(path)
     if 'treament' not in record.keys():
@@ -53,5 +55,6 @@ def add_note(animalid, folder, note):
 #     for i in range(len(available_treatment)):
 #         print('%d ---> %s'% (i, available_treatment[i]))
         
-
+#def get_info(animalid):
+#    path = os.path.join()
     

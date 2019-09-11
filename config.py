@@ -12,6 +12,8 @@ import shutil
 import inspect
 import types
 from pathlib import Path
+import os
+from astrotate import utils
 
 # ========================================================================================================================================
 # ========================================================================================================================================
@@ -37,6 +39,22 @@ class Config:
             print('===================================================')
             print(t)
             print(inspect.getattr_static(self, t))
+    
+    def check_surgery_animal(self, animalid = None):
+        if 'surgery' not in self.system_path.keys():
+            raise Exception('This database does not have SURG folder')
+        else:
+            folder = os.path.join(self.system_path['root'], self.system_path['surgery'])
+            files = os.listdir(folder)
+            files = [x[0:-5] for x in files if x[-5:] == '.json']
+        
+        if animalid == None:
+            return(files)
+        else:
+            animal = utils.readjson(os.path.join(folder, animalid+'.json'))
+            return(animal)
+
+
 
     # def download(path):
     #     # Download the config file from the module root folder

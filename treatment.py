@@ -32,6 +32,9 @@ inject_tool_list = [
     'insolin syringe'
 ]
 
+primary_antibody_list = ['rabbit anti c-Fos']
+secondary_antibody_list = ['goat anti rabbit']
+
 
 
 # ================================================================================================================================
@@ -123,4 +126,27 @@ def optoStimulation():
 
 def purfusion():
     treat = {'method': 'PFA purfusion'}
+    return(treat)
+
+def ihcstain():
+    treat = {'method': 'IHC stain'}
+
+    treat['stain_type'] = utils.select(['fluorescence', 'DAB'])
+    
+    if treat['stain_type'] in ['fluorescence', 'DAB']:
+        treat['primary'] = {}
+        treat['primary']['antibody'] = utils.select('Primary antibody: ', primary_antibody_list)
+        treat['primary']['concentration'] = input('Primary antibody dilution, input like 1/10000: ')
+        tmp = input('How long did the primary antibody treat. unit is hour, input an int. Press ENTER as overnight: ')
+        if tmp == '':
+            treat['primary']['duration'] = 'overnight'
+        else:
+            treat['primary']['duration'] = tmp+'h'
+
+        treat['secondary'] = {}
+        treat['secondary']['antibody'] = utils.select('Secondary antibody: ', secondary_antibody_list)
+        treat['secondary']['concentration'] = input('Secondary antibody dilution, input like 1/200: ')
+        treat['secondary']['duration'] = input('How long did the second antibody treat. unit is hour, input an int: ')+'h'
+
+        
     return(treat)
