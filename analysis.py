@@ -7,6 +7,5 @@ def paired_analysis_idx(array_length):
     output = []
     for i in range(array_length):
         for j in range(i+1, array_length):
-            print(i, j)
             output.append([i,j])
     return(output)

@@ -75,23 +75,14 @@ def astrocyte_event_aqua_ana(df):
 def astrocyte_event_aqua_ana_between_groups(result_array, group_titles):
     # the result input is the output from astrocyte_event_aqua_ana function
     keys = list(result_array[0].keys())
-    # group1 = []
-    # group1_err = []
-    # group2 = []
-    # group2_err = []
-    # xlabel = []
+    
     for key in keys[1:]:
         print(key)
         
-        # group1.append(result1[key]['mean'])
-        # group1_err.append(result1[key]['stdev'])
-        # group2.append(result2[key]['mean'])
-        # group2_err.append(result2[key]['stdev'])
-        # xlabel.append(key)
         fig, ax = plt.subplots()
-        width = 0.2
-        for ra in result_array:
-            ax.bar(0.5 - width/2, ra[key]['mean'], width, yerr = ra[key]['stdev'])
+        width = 1/len(result_array)
+        for i in range(len(result_array)):
+            ax.bar(i/len(result_array), result_array[i][key]['mean'], width, yerr = result_array[i][key]['stdev'])
             
         ax.set_title(key)
         ax.legend(group_titles)
@@ -101,7 +92,8 @@ def astrocyte_event_aqua_ana_between_groups(result_array, group_titles):
         for pcompare in plist:
             p = stats.mannwhitneyu(np.array(result_array[pcompare[0]][key]['array']).astype(float), 
                                    np.array(result_array[pcompare[1]][key]['array']).astype(float))
-            print('%s vs %s: p = %f' % (group_titles[pcompare[0]], group_titles[pcompare[0]], p))
+            
+            print('%s vs %s: p = %f' % (group_titles[pcompare[0]], group_titles[pcompare[1]], p[1]))
         print('=======================================================')
         
     
