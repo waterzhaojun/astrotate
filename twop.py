@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 # from . import array, utils, treatment, config as cg
-from astrotate import array, utils, treatment, config as cg
+from astrotate import array, utils, treatment, config as cg, analysis
 import json
 import scipy.stats as stats
 from datetime import datetime
@@ -82,7 +82,7 @@ def astrocyte_event_aqua_ana_between_groups(result_array, group_titles):
     # xlabel = []
     for key in keys[1:]:
         print(key)
-        p = stats.mannwhitneyu(np.array(result1[key]['array']).astype(float), np.array(result2[key]['array']).astype(float))
+        
         # group1.append(result1[key]['mean'])
         # group1_err.append(result1[key]['stdev'])
         # group2.append(result2[key]['mean'])
@@ -96,7 +96,12 @@ def astrocyte_event_aqua_ana_between_groups(result_array, group_titles):
         ax.set_title(key)
         ax.legend(group_titles)
         plt.show()
-        print(p)
+
+        plist = analysis.paired_analysis_idx(len(result_array))
+        for pcompare in plist:
+            p = stats.mannwhitneyu(np.array(result_array[pcompare[0]][key]['array']).astype(float), 
+                                   np.array(result_array[pcompare[1]][key]['array']).astype(float))
+            print('%s vs %s: p = %f' % (group_titles[pcompare[0]], group_titles[pcompare[0]], p))
         print('=======================================================')
         
     
