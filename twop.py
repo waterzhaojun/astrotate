@@ -72,9 +72,9 @@ def astrocyte_event_aqua_ana(df):
     
     return(result)
 
-def astrocyte_event_aqua_ana_between_groups(result1, result2, group_titles):
+def astrocyte_event_aqua_ana_between_groups(result_array, group_titles):
     # the result input is the output from astrocyte_event_aqua_ana function
-    keys = list(result1.keys())
+    keys = list(result_array[0].keys())
     # group1 = []
     # group1_err = []
     # group2 = []
@@ -90,8 +90,9 @@ def astrocyte_event_aqua_ana_between_groups(result1, result2, group_titles):
         # xlabel.append(key)
         fig, ax = plt.subplots()
         width = 0.2
-        ax.bar(0.5 - width/2, result1[key]['mean'], width, yerr = result1[key]['stdev'])
-        ax.bar(0.5 + width/2, result2[key]['mean'], width, yerr = result2[key]['stdev'])
+        for ra in result_array:
+            ax.bar(0.5 - width/2, ra[key]['mean'], width, yerr = ra[key]['stdev'])
+            
         ax.set_title(key)
         ax.legend(group_titles)
         plt.show()
