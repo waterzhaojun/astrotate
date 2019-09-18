@@ -107,9 +107,9 @@ def input_date(dict, newkey, note, allow_none = False):
     tmp = input(note)
     if tmp=='':
         if allow_none:
-            pass
-        else:
             dict[newkey] = None
+        else:
+            pass
     elif tmp == '1':
         dict[newkey] = format_date(datetime.now().strftime('%m-%d-%Y'))
 
@@ -127,9 +127,9 @@ def input_time(dict, newkey, note, allow_none = False):
     tmp = input(note)
     if tmp=='':
         if allow_none:
-            pass
-        else:
             dict[newkey] = None
+        else:
+            pass
     elif tmp == '1':
         dict[newkey] = datetime.now().strftime('%H:%M')
     else:
