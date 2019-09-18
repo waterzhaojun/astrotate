@@ -10,14 +10,13 @@ Steps:
 import numpy as np
 import os
 from datetime import datetime
-from astrotate import utils, config
+from astrotate import utils
 
-
-def init_animal(folder):
+def init_animal(config):
     # the folder is where the surgery records stored.
     animal = {}
     animal['id'] = input('input animal id: ')
-    outputpath = os.path.join(folder, animal['id']+'.json')
+    outputpath = os.path.join(config.system_path['root'], config.system_path['surgery'], animal['id']+'.json')
     if os.path.exists(outputpath):
         print('This animal already exists, do not need initiate. You may use add_treatment or add_note to update.')
     else:
@@ -29,9 +28,8 @@ def init_animal(folder):
         print(animal)
         utils.writejson(outputpath, animal)
         
-def add_treatment(animalid, treatment):
-    cg = config.Config()
-    folder = os.path.join(cg.root)
+def add_treatment(animalid, treatment, config):
+    folder = os.path.join(config.system_path['root'], config.system_path['surgery'])
     path = os.path.join(folder, animalid+'.json')
     record = utils.readjson(path)
     if 'treament' not in record.keys():
@@ -41,8 +39,8 @@ def add_treatment(animalid, treatment):
     utils.writejson(path, record)
 
 # add_note is still under development. delete this note when tried
-def add_note(animalid, folder, note):
-    path = os.path.join(folder, animalid + '.json')
+def add_note(animalid, note, config):
+    path = os.path.join(config.system_path['root'], config.system_path['surgery'], animalid + '.json')
     record = utils.readjson(path)
     if type(record['note']) != list:
         record['note'] = []
