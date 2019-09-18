@@ -91,7 +91,7 @@ def drug(config):
     treat['duration'] = input('How long it treated (unit is min, input int): ')+'min'
 
     if treat['apply_method'] == 'topic': # set parameters for topic treatment
-        tmp = input('How long it recover after wash the drug (unit is min, input int, Press ENTER for 0): ')+'min'
+        tmp = input('How long it recover after wash the drug (unit is min, input int, Press ENTER for 0): ')
         if tmp == '':
             tmp = '0'
         treat['recovery'] = tmp+'min'
