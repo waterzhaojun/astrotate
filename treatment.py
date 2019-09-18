@@ -104,8 +104,33 @@ def drug(config):
 
     if treat['apply_method'] == 'iv': # set parameters for iv treatment
         treat['apply_speed'] = input('iv drug injection speed (unit is ml/min, input number): ') + 'ml/min'
+    
+    tmp = input('treatment start time. Press Enter to ignore this. Input 1 for present time. Input xx:xx for detail time: ')
+    if tmp=='':
+        pass
+    elif tmp == '1':
+        treat['apply_time'] = datetime.now().strftime('%H:%M')
+    else:
+        treat['apply_time'] = tmp
+
+    tmp = input('treatment date. Press Enter to ignore this. Input 1 for today. Input mm-dd-yyyy for detail date: ')
+    if tmp=='':
+        pass
+    elif tmp == '1':
+        treat['date'] = utils.format_date(datetime.now().strftime('%m-%d-%Y'))
+    else:
+        treat['date'] = utils.format_date(tmp)
 
     return(treat)
+
+def setupWindow():
+    treat = {}
+    treat['window_type'] = utils.select('Choose window type: ', ['glass', 'thin bone'])
+    if treat['window_type'] == 'glass':
+        treat['layers'] = utils.select('glass layers: ', ['5-3-3-3', '5-3-3'])
+        treat['with_agar']  =utils.select('Put agar under?: ', ['Y', 'N'])
+    return(treat)
+
 
 def optoStimulation():
 
