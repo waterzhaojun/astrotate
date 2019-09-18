@@ -94,6 +94,47 @@ def select_from_dict(hellowords, dict, **kwargs):
 
     return(final)
 
+def input_date(dict, newkey, note, allow_none = False):
+
+    if newkey in dict.keys():
+        raise Exception('This key already exist. Please confirm.')
+
+    if allow_none:
+        note = note + '. Press Enter to ignore this. Input 1 for today. Input mm-dd-yyyy for detail date: '
+    else:
+        note = note + '. Input 1 for today. Input mm-dd-yyyy for detail date: '
+    
+    tmp = input(note)
+    if tmp=='':
+        if allow_none:
+            pass
+        else:
+            dict[newkey] = None
+    elif tmp == '1':
+        dict[newkey] = format_date(datetime.now().strftime('%m-%d-%Y'))
+
+    else:
+        dict[newkey] = format_date(tmp)
+
+def input_time(dict, newkey, note, allow_none = False):
+    if newkey in dict.keys():
+        raise Exception('This key already exist. Please confirm.')
+
+    if allow_none:
+        note = note + '. Press Enter to ignore this. Input 1 for present time. Input HH:MM for certain time: '
+    else:
+        note = note + '. Input 1 for now. Input HH:MM for certain time: '
+    tmp = input(note)
+    if tmp=='':
+        if allow_none:
+            pass
+        else:
+            dict[newkey] = None
+    elif tmp == '1':
+        dict[newkey] = datetime.now().strftime('%H:%M')
+    else:
+        dict[newkey] = tmp
+
 def projectArrayInput(config):
     projects = config.projects
     result = select_from_dict('Choose involved projects', projects, allow_array=True, return_key=True)

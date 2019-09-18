@@ -53,11 +53,7 @@ def aavinject(*args, **kwargs):
     treatment['inject_tool'] = utils.select('Choose inject tool: ', inject_tool_list, **kwargs)
 
     # date ===============================
-    tmp = input('Inject date (format: month-date-year, Press ENTER for today): ')
-    if tmp == '':
-        treatment['inject_date'] = utils.format_date(datetime.today().strftime('%m-%d-%Y'))
-    else:
-        treatment['inject_date'] = utils.format_date(tmp)
+    utils.input_date(treatment, 'inject_date', 'Inject date', allow_none = False)
 
     # speed ===============================
     treatment['inject_speed'] = input('Inject speed (ul/min): ') + 'ul/min'
@@ -75,9 +71,7 @@ def csd():
     treat = {'method': 'CSD'}
     csd_method_list = ['pinprick', 'KCl']
 
-    tmp = input('CSD time, format as xx:xx (Press ENTER to ignore this step): ')
-    if tmp != '':
-        treat['time'] = tmp
+    utils.input_time(treat, 'time', 'CSD time', allow_none = False)
     
     treat['apply_method'] = utils.select('Choose CSD method: ', csd_method_list)
 
@@ -105,21 +99,8 @@ def drug(config):
     if treat['apply_method'] == 'iv': # set parameters for iv treatment
         treat['apply_speed'] = input('iv drug injection speed (unit is ml/min, input number): ') + 'ml/min'
     
-    tmp = input('treatment start time. Press Enter to ignore this. Input 1 for present time. Input xx:xx for detail time: ')
-    if tmp=='':
-        pass
-    elif tmp == '1':
-        treat['apply_time'] = datetime.now().strftime('%H:%M')
-    else:
-        treat['apply_time'] = tmp
-
-    tmp = input('treatment date. Press Enter to ignore this. Input 1 for today. Input mm-dd-yyyy for detail date: ')
-    if tmp=='':
-        pass
-    elif tmp == '1':
-        treat['date'] = utils.format_date(datetime.now().strftime('%m-%d-%Y'))
-    else:
-        treat['date'] = utils.format_date(tmp)
+    utils.input_date(treat, 'apply_time', 'Treatment start time', allow_none = False)
+    utils.input_date(treat, 'date', 'Treat date', allow_none = False)
 
     return(treat)
 
@@ -129,6 +110,7 @@ def setupWindow():
     if treat['window_type'] == 'glass':
         treat['layers'] = utils.select('glass layers: ', ['5-3-3-3', '5-3-3'])
         treat['with_agar']  =utils.select('Put agar under?: ', ['Y', 'N'])
+    utils.input_date(treat, 'date', 'Setup date', allow_none = False)
     return(treat)
 
 
