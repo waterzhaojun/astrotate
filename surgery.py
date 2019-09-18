@@ -32,11 +32,11 @@ def add_treatment(animalid, treatment, config):
     folder = os.path.join(config.system_path['root'], config.system_path['surgery'])
     path = os.path.join(folder, animalid+'.json')
     record = utils.readjson(path)
-    print(record)
     if 'treatment' not in record.keys():
         record['treatment'] = []
     record['treatment'].append(treatment)
-    print(record)
+    for key, value in record.items():
+        print('{}: {}'.format(key, value))
     utils.writejson(path, record)
 
 # add_note is still under development. delete this note when tried
