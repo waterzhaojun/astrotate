@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 
 objective = {'Nikon': ['16X']}
 magnitude_list = [0.8, 1, 2.0, 2.4, 4.0, 4.8, 5.7]
-datatype = ['astrocyte_event', 'GCaMP_afferent']
 
 
 def folder_format(animalid, date, run):
@@ -118,12 +117,17 @@ class Data:
 
     """
     def __init__(self, exp, run):
+        self.data_type = utils.select('Data type: ', ['astrocyte_event', 'GCaMP_afferent', 'bloodvessel_dilation'])
         self.rawfolder = self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
+        self.channel = utils.select('Data from channel: ', ['pmt0', 'pmt1'])
         self.coordinates = self.input_coords()
         self.objective_lens = self.select_objective()
         self.input_scanbox()
         self.input_situation(exp)
-        self.__analysis_method__()
+
+        if self.data_type == 'astrocyte_event':
+            self.analysis_method = utils.select('Choose analysis method: ', ['AQuA'])
+            
         self.__analysis_result_path__(exp)
 
     def __date_format__(self, datestr):
@@ -178,10 +182,6 @@ class Data:
         self.situation = {}
         self.situation['treatment'] = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
         self.situation['time_after_treatment'] = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
-
-    def __analysis_method__(self):
-        analysis_method_list = ['AQuA']
-        self.analysis_method = utils.select('Choose analysis method: ', analysis_method_list)
 
     def __analysis_result_path__(self, exp):
         # the analysis result file is suppose to save at the same folder with info.json
