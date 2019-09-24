@@ -185,7 +185,7 @@ class Data:
 # ========================================================================================================================================        
 class Exp2P(cg.Experiment):
 
-    def __init__(self, config, animalid, dateid):
+    def __init__(self, config, animalid, dateid, run):
         super().__init__(config)
         self.animalid = animalid
         self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
@@ -195,7 +195,7 @@ class Exp2P(cg.Experiment):
         if not os.path.exists(self.animalfolder):
             os.mkdir(self.animalfolder)
 
-        self.expfile = os.path.join(self.animalfolder, str(dateid)+'.json')
+        self.expfile = os.path.join(self.animalfolder, str(dateid)+'_'+str(run)'.json')
         if not os.path.exists(self.expfile):
             exp = {}
             exp['project'] = utils.projectArrayInput(config)
