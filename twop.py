@@ -184,8 +184,14 @@ class Data:
 # ========================================================================================================================================
 # ========================================================================================================================================        
 class Exp2P(cg.Experiment):
-
-    def __init__(self, config, animalid, dateid, run):
+    """
+    The reason to structure the 2P data based on animal, date, but not run is because each animal
+    will only expect receive 1 treatment. Even has multiple treatment, the previous treatment will
+    effect the later treatment. So it is hard to seperate treatment in each runs. So it will be better
+    understand to give a total treatment list, and add all runs in one info.json, for each run, just need to 
+    give a situation value to label it.
+    """
+    def __init__(self, config, animalid, dateid):
         super().__init__(config)
         self.animalid = animalid
         self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
@@ -195,7 +201,7 @@ class Exp2P(cg.Experiment):
         if not os.path.exists(self.animalfolder):
             os.mkdir(self.animalfolder)
 
-        self.expfile = os.path.join(self.animalfolder, str(dateid)+'_'+str(run)+'.json')
+        self.expfile = os.path.join(self.animalfolder, str(dateid)+'.json')
         if not os.path.exists(self.expfile):
             exp = {}
             exp['project'] = utils.projectArrayInput(config)
