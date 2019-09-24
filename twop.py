@@ -195,7 +195,7 @@ class Exp2P(cg.Experiment):
         if not os.path.exists(self.animalfolder):
             os.mkdir(self.animalfolder)
 
-        self.expfile = os.path.join(self.animalfolder, str(dateid)+'_'+str(run)'.json')
+        self.expfile = os.path.join(self.animalfolder, str(dateid)+'_'+str(run)+'.json')
         if not os.path.exists(self.expfile):
             exp = {}
             exp['project'] = utils.projectArrayInput(config)
