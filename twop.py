@@ -113,12 +113,18 @@ def input_data_info(animalid, date, run, datatype):
 # =======================================================================================================================================================
 # =======================================================================================================================================================
 class Data:
+    """
+    each data should have run label.
+
+    """
     def __init__(self, exp, run):
         self.rawfolder = self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
         self.coordinates = self.input_coords()
         self.objective_lens = self.select_objective()
         self.input_scanbox()
         self.input_situation(exp)
+        self.__analysis_method__()
+        self.__analysis_result_path__(exp)
 
     def __date_format__(self, datestr):
         return(datetime.strptime(datestr, '%m-%d-%Y').strftime('%y%m%d'))
@@ -172,6 +178,21 @@ class Data:
         self.situation = {}
         self.situation['treatment'] = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
         self.situation['time_after_treatment'] = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
+
+    def __analysis_method__(self):
+        analysis_method_list = ['AQuA']
+        self.analysis_method = utils.select('Choose analysis method: ', analysis_method_list)
+
+    def __analysis_result_path__(self, exp):
+        # the analysis result file is suppose to save at the same folder with info.json
+        # It will be convienent to be able to upload to google cloud, but right now this 
+        # function is not available.
+        # This path refer to a folder under the animal folder, in this folder there are at list one data file and at list parameter json file.
+        # The structure of this folder based on the analysis method.
+        files = os.listdir(exp.animalfolder)
+        files = [x for x in files if os.path.isdir(os.path.join(exp.animalfolder, x))]
+        self.analysis_result_path = utils.select('Choose the analysis result folder for this run: ', files)
+
 
     def output(self):
         ot = self.__dict__
