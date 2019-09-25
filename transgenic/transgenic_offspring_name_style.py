@@ -7,6 +7,8 @@ style_list = pd.DataFrame(columns=['parents_title', 'offspring_title'])
 style_list.loc[len(style_list), :] = [['IP3R2', 'B6.Cg-Edil3'], 'IP3R2.B6CE']
 style_list.loc[len(style_list), :] = [['Pirt-Cre', 'R26tdTomato'], 'Pirt-Cre-R26tdTomato']
 style_list.loc[len(style_list), :] = [['R26tdTomato', 'CGRP.Cre'], 'CGRP.Cre-R26tdTomato']
+style_list.loc[len(style_list), :] = [['Ai162D', 'NaV1.8'], 'NaV1.8-Ai162D']
+style_list.loc[len(style_list), :] = [['R26tdTomato', 'CGRP.Cre-R26tdTomato'], 'CGRP.Cre-R26tdTomato']
 # print(style_list)
 
 def name_title(fullname):
