@@ -79,12 +79,12 @@ class Experiment:
     def loadExp(self):
         tmp = utils.readjson(self.infopath)
         for key, value in tmp.items():
-            self.key = value
+            setattr(self, key, value)
 
     def writeExp(self):
         tmp = {}
         for key in self.keys:
-            tmp[key] = self.key
+            tmp[key] = getattr(self, key)
         utils.writejson(self.infopath, tmp)
 
     def show(self):

@@ -218,19 +218,20 @@ class Exp2P(cg.Experiment):
         self.animalid = animalid
         self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
         self.infopath = self.__setinfopath__()
-        self.loadExp(self.infopath)
+        self.loadExp()
 
     def __setinfopath__(self):
         self.animalfolder = os.path.join(self.catagoryroot, animalid)
+        print(self.animalfolder)
         if not os.path.exists(self.animalfolder):
             os.mkdir(self.animalfolder)
-        path = os.path.join(self.animalfolder, str(dateid)+'.json')
-        if not os.path.exists(self.infopath):
+        path = os.path.join(self.animalfolder, datetime.strptime(self.date, '%m-%d-%Y').strftime('%y%m%d')+'.json')
+        if not os.path.exists(path):
             exp = {}
             exp['project'] = utils.projectArrayInput(config)
             exp['treatment'] = {}
             exp['data'] = []
-            utils.writejson(self.infopath, exp)
+            utils.writejson(path, exp)
         return(path)
 
     
@@ -251,4 +252,3 @@ class Exp2P(cg.Experiment):
         # use this to add a new data to exp and update it to the json file in database
         self.data.append(dataObj.output())
         self.writeExp()
-
