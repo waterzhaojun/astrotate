@@ -69,7 +69,7 @@ class Config:
 class Experiment:
     def __init__(self, config, catagory):
         self.root = config.system_path['root']
-        self.catagoryroot = os.path.join(config.system_path['root'], config.catagory)
+        self.catagoryroot = os.path.join(config.system_path['root'], config.system_path[catagory])
         self.infopath = self.__setinfopath__()
         self.keys = ['animal', 'project', 'treatment', 'data']
         self.loadExp()
