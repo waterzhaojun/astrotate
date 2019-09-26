@@ -127,7 +127,7 @@ class Data:
 
         if self.data_type == 'astrocyte_event':
             self.analysis_method = utils.select('Choose analysis method: ', ['AQuA'])
-            
+
         self.__analysis_result_path__(exp)
 
     def __date_format__(self, datestr):
@@ -213,33 +213,26 @@ class Exp2P(cg.Experiment):
     give a situation value to label it.
     """
     def __init__(self, config, animalid, dateid):
-        super().__init__(config)
+        super().__init__(config, 'twophoton')
+        self.keys = ['project', 'treatment', 'data']
         self.animalid = animalid
         self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
-        self.mainfolder = os.path.join(self.root, config.system_path['twophoton'])
 
-        self.animalfolder = os.path.join(self.mainfolder, animalid)
+        self.animalfolder = os.path.join(self.catagoryroot, animalid)
         if not os.path.exists(self.animalfolder):
             os.mkdir(self.animalfolder)
 
-        self.expfile = os.path.join(self.animalfolder, str(dateid)+'.json')
-        if not os.path.exists(self.expfile):
+        self.loadExp(self.infopath)
+
+    def __setinfopath__(self):
+        path = os.path.join(self.animalfolder, str(dateid)+'.json')
+        if not os.path.exists(self.infopath):
             exp = {}
             exp['project'] = utils.projectArrayInput(config)
             exp['treatment'] = {}
             exp['data'] = []
-            utils.writejson(self.expfile, exp)
-        self.loadExp()
-
-    def loadExp(self):
-        tmp = utils.readjson(self.expfile)
-        self.project = tmp['project']
-        self.treatment = tmp['treatment']
-        self.data = tmp['data']
-    
-    def writeExp(self):
-        tmp = {'project': self.project, 'treatment':self.treatment, 'data':self.data}
-        utils.writejson(self.expfile, tmp)
+            utils.writejson(self.infopath, exp)
+        return(path)
 
     
     def add_treatment(self, newtreatment, allowRepeatTreat = False):

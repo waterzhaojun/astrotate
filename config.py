@@ -67,8 +67,26 @@ class Config:
 # ========================================================================================================================================
 # ========================================================================================================================================   
 class Experiment:
-    def __init__(self, config):
+    def __init__(self, config, catagory):
         self.root = config.system_path['root']
+        self.catagoryroot = os.path.join(config.system_path['root'], config.catagory)
+        self.infopath = self.__setinfopath__()
+        self.keys = ['animal', 'project', 'treatment', 'data']
+        self.loadExp()
+
+    def __setinfopath__(self):
+        return(None)
+
+    def loadExp(self):
+        tmp = utils.readjson(self.infopath)
+        for key, value in tmp.items():
+            self.key = value
+
+    def writeExp(self):
+        tmp = {}
+        for key in self.keys:
+            tmp[key] = self.key
+        utils.writejson(self.infopath, tmp)
 
     def show(self):
         # Check your config file
@@ -78,6 +96,7 @@ class Experiment:
             print('===================================================')
             print(t)
             print(inspect.getattr_static(self, t))
+
         
 
 def load_config(path):
