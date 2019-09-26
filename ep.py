@@ -8,7 +8,7 @@ import os
 
 import pandas as pd
 import numpy as np
-from astrotate import array, utils, treatment
+from astrotate import array, utils, treatment, config as cg
 import json
 
 def check_channel_name(exp_folder, trialNum = None):
@@ -63,38 +63,7 @@ def treatmentList(treatlist):
         treat[str(i)] = treatlist[i]
     return(treat)
 
-def animal(animalid, gender, weight, brain_bloom=False, sub_bleeding=False, ever_search_neuron=True,strain='SD',
-          give_oxygen=True, species='rat'):
-    animaldict = {}
-    
-    animaldict['id'] = animalid
-    
-    if gender.lower() in ['m', 'male']:
-        gender = 'M'
-    elif gender.lower() in ['f', 'female']:
-        gender = 'F'
-    animaldict['gender'] = gender
-    
-    animaldict['weight'] = int(weight)
-    
-    animaldict['brain_bloom'] = ['N', 'Y'][int(brain_bloom)]
-    animaldict['sub_bleeding'] = ['N', 'Y'][int(sub_bleeding)]
-    animaldict['ever_search_neuron'] = ['N', 'Y'][int(ever_search_neuron)]
-    animaldict['give_oxygen'] = ['N', 'Y'][int(give_oxygen)]
-    
-    if strain in ['SD', 'C57']:
-        animaldict['strain'] = strain
-    
-    if species in ['rat', 'mouse']:
-        animaldict['species'] = species
-    
-    if species == 'rat' and strain not in ['SD']:
-        raise Exception('please check your species and strain')
-    
-    if species == 'mouse' and strain not in ['C57']:
-        raise Exception('please check your species and strain')
-        
-    return(animaldict)
+
 
 """    
 def array_timepoints_based_on_treatment(timepoint_df, treatment_tp):
@@ -204,3 +173,86 @@ def treatmentMethod(info, method):
     return(thekey[0], thedict[0])
 
     
+# ========================================================================================================================================
+# ========================================================================================================================================
+# Exp class build a class for a electrophysiology experiment. It should include information like animal, date, path where save the data, 
+# animal treatment, and the experiment data 
+# ========================================================================================================================================
+# ========================================================================================================================================        
+class Exp(cg.Experiment):
+    """
+    The reason to structure the 2P data based on animal, date, but not run is because each animal
+    will only expect receive 1 treatment. Even has multiple treatment, the previous treatment will
+    effect the later treatment. So it is hard to seperate treatment in each runs. So it will be better
+    understand to give a total treatment list, and add all runs in one info.json, for each run, just need to 
+    give a situation value to label it.
+    """
+    def __init__(self, config):
+        super().__init__(config, 'electrophysiology')
+        self.keys = ['animal', 'project', 'treatment']
+        self.__date__()
+        self.__setup_animal__()
+        self.infopath = self.__setinfopath__(config)
+        self.loadExp()
+
+    def __setinfopath__(self, config):
+        path = os.path.join(self.animalfolder, 'info.json')
+        if not os.path.exists(path):
+            exp = {}
+            exp['animal'] = self.animal
+            exp['project'] = utils.projectArrayInput(config)
+            exp['treatment'] = {}
+            utils.writejson(path, exp)
+        return(path)
+
+    def __date__(self):
+        tmp = input('Exp date. Press ENTER for today. Otherwise, input mm/dd/yyyy: ')
+        self.date = utils.format_date(tmp)
+
+    def __setup_animal__(self):
+        animaldict = {}
+        datefolder = os.path.join(self.catagoryroot, datetime.strptime(self.date, '%m-%d-%Y').strftime('%y%m%d'))
+        if not os.path.exists(datefolder):
+            os.mkdir(datefolder)
+        folders = os.listdir(datefolder)
+        folders = [x for x in folders if '.' not in x]
+        nanimal = len(folders)
+        self.animalfolder = os.path.join(datefolder, 'animal_'+str(nanimal+1))
+        if not os.path.exists(self.animalfolder):
+            os.mkdir(self.animalfolder)
+        animaldict['id'] = input('Input Animal id. Press ENTER for generate id by date: ')
+        if animaldict['id'] == '':
+            animaldict['id'] = datetime.strptime(self.date, '%m-%d-%Y').strftime('%Y%m%d') + '%02d' % (nanimal+1)
+        animaldict['gender'] = utils.select('Animal gender: ', ['M', 'F'])
+        animaldict['weight'] = int(input('Animal weight. unit is g. input an int: '))
+        
+        animaldict['brain_bloom'] = utils.select('Brain bloom? : ', ['N', 'Y'])
+        animaldict['sub_bleeding'] = utils.select('Sub bleeding? : ', ['N', 'Y'])
+        animaldict['ever_search_neuron'] = utils.select('Ever search neuron? : ', ['N', 'Y'])
+        animaldict['give_oxygen'] = utils.select('Give oxygen? : ', ['N', 'Y'])
+        
+        animaldict['strain'] = utils.select('Strain : ', ['SD', 'C57'])
+        if animaldict['strain'] in ['SD']:
+            animaldict['species'] = 'rat'
+        elif animaldict['strain'] in ['C57']:
+            animaldict['species'] = 'mouse'
+        
+        self.animal = animaldict
+    
+    def add_treatment(self, newtreatment, allowRepeatTreat = False):
+        # use this to add a new treatment to exp and update it to the json file in database. 
+        # This should be done before you start to add data
+        keys = self.treatment.keys()
+        methods = [self.treatment[x]['method'] for x in keys]
+
+        if (newtreatment['method'] in methods) and (not allowRepeatTreat):
+            print('You sure you want to add this treatment? If yes, run this function again and set allowRepeatTreat = True')
+        else:
+            newkey = str(len(keys))
+            self.treatment[newkey] = newtreatment
+            self.writeExp()
+
+    def add_data(self, dataObj):
+        # use this to add a new data to exp and update it to the json file in database
+        self.data.append(dataObj.output())
+        self.writeExp()

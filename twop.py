@@ -200,7 +200,7 @@ class Data:
 
 # ========================================================================================================================================
 # ========================================================================================================================================
-# Exp2P class build a clas for a two photon experiment. It should include information like animal id, date, path where save the data, 
+# Exp2P class build a class for a two photon experiment. It should include information like animal id, date, path where save the data, 
 # animal treatment, and the experiment data 
 # ========================================================================================================================================
 # ========================================================================================================================================        
@@ -217,11 +217,11 @@ class Exp2P(cg.Experiment):
         self.keys = ['project', 'treatment', 'data']
         self.animalid = animalid
         self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
-        self.infopath = self.__setinfopath__()
+        self.infopath = self.__setinfopath__(config)
         self.loadExp()
 
-    def __setinfopath__(self):
-        self.animalfolder = os.path.join(self.catagoryroot, animalid)
+    def __setinfopath__(self, config):
+        self.animalfolder = os.path.join(self.catagoryroot, self.animalid)
         print(self.animalfolder)
         if not os.path.exists(self.animalfolder):
             os.mkdir(self.animalfolder)
