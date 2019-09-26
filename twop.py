@@ -217,14 +217,13 @@ class Exp2P(cg.Experiment):
         self.keys = ['project', 'treatment', 'data']
         self.animalid = animalid
         self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
-
-        self.animalfolder = os.path.join(self.catagoryroot, animalid)
-        if not os.path.exists(self.animalfolder):
-            os.mkdir(self.animalfolder)
-
+        self.infopath = self.__setinfopath__()
         self.loadExp(self.infopath)
 
     def __setinfopath__(self):
+        self.animalfolder = os.path.join(self.catagoryroot, animalid)
+        if not os.path.exists(self.animalfolder):
+            os.mkdir(self.animalfolder)
         path = os.path.join(self.animalfolder, str(dateid)+'.json')
         if not os.path.exists(self.infopath):
             exp = {}
