@@ -65,19 +65,6 @@ def treatmentList(treatlist):
     return(treat)
 
 
-
-"""    
-def array_timepoints_based_on_treatment(timepoint_df, treatment_tp):
-    rows = len(treatment_tp)
-    result = {}
-    for r in range(rows):
-        tid = treatment_tp.loc[r, 'treatment_id']
-        idx = timepoint_df.index[timepoint_df['trial'] == treatment_tp.loc[r, 'trial']].tolist()[0]
-        totaltime = np.sum(timepoint_df.loc[:, 'length'].values[0:idx]) + treatment_tp.loc[r, 'sec']*output_rate
-        result[str(tid)] = int(totaltime)
-    return(result)
-"""
-    
 def update_info(infopath, newinfo):
     if os.path.exists(infopath):
         info = utils.readjson(infopath)
