@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from astrotate import array, utils, treatment, config as cg
 import json
+from datetime import datetime
 
 def check_channel_name(exp_folder, trialNum = None):
     files = os.listdir(exp_folder)
