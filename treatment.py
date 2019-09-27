@@ -87,6 +87,10 @@ def drug(config):
     # config = utils.load_config()
     treat['activate_drug'] = utils.select('Choose treated drug: ', config.drug_list)
     treat['concentration'] = input('Drug concentration (unit is mM, input a number): ')+'mM'
+    tmp = input('Drug soluted in. Press ENTER for default SIF and ignore this input. Input string for specific solution. ')
+    if tmp != '':
+        treat['activate_drug_solution'] = tmp
+
     treat['apply_method'] = utils.select('Choose drug apply method: ', apply_method)
     treat['duration'] = input('How long it treated (unit is min, input int): ')+'min'
 
@@ -95,6 +99,13 @@ def drug(config):
         if tmp == '':
             tmp = '0'
         treat['recovery'] = tmp+'min'
+        tmp = input('Wash solution. Press ENTER to consider it as normal SIF wash and ignore this input. Input 0 for same solution as activate drug solution. ')
+        if tmp == '':
+            pass
+        elif tmp == '0':
+            treat['wash_method'] = treat['activate_drug_solution']
+        else:
+            treat['wash_method'] = tmp
 
     if treat['apply_method'] == 'iv': # set parameters for iv treatment
         treat['apply_speed'] = input('iv drug injection speed (unit is ml/min, input number): ') + 'ml/min'

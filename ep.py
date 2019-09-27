@@ -240,18 +240,6 @@ class Exp(cg.Experiment):
         
         self.animal = animaldict
     
-    def add_treatment(self, newtreatment, allowRepeatTreat = False):
-        # use this to add a new treatment to exp and update it to the json file in database. 
-        # This should be done before you start to add data
-        keys = self.treatment.keys()
-        methods = [self.treatment[x]['method'] for x in keys]
-
-        if (newtreatment['method'] in methods) and (not allowRepeatTreat):
-            print('You sure you want to add this treatment? If yes, run this function again and set allowRepeatTreat = True')
-        else:
-            newkey = str(len(keys))
-            self.treatment[newkey] = newtreatment
-            self.writeExp()
 
     def add_data(self, dataObj):
         # use this to add a new data to exp and update it to the json file in database
