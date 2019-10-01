@@ -24,7 +24,12 @@ def init_animal(config):
         animal['note'] = ''
         animal['info']['strain'] = utils.select('Choose animal strain: ', ['rat', 'mouse'])
         animal['info']['gender'] = utils.select('Choose animal gender: ', ['M', 'F'])
-        animal['info']['birthday'] = utils.format_date(input('Animal birthday (format month-day-year): '))
+        tmp = input('Animal birthday (format month-day-year). Press ENTER to ignore: ')
+        if tmp != '':
+            animal['info']['birthday'] = utils.format_date()
+        tmp = input('transgenic db id. Press ENTER to ignore: ')
+        if tmp != '':
+            animal['info']['transgenic_id'] = tmp
         print(animal)
         utils.writejson(outputpath, animal)
         
