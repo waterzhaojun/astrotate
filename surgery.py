@@ -30,6 +30,9 @@ def init_animal(config):
         tmp = input('transgenic db id. Press ENTER to ignore: ')
         if tmp != '':
             animal['info']['transgenic_id'] = tmp
+        tmp = utils.select('Ear punch when giving surgery. ', ['L', 'R', 'LR', 'none'])
+        if tmp != 'none':
+            animal['info']['ear_punch'] = tmp
         print(animal)
         utils.writejson(outputpath, animal)
         
