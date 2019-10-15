@@ -14,6 +14,7 @@ aav_list = [
     'AAV5.GfaABC1D.cyto.GCaMP6f.SV40',
     'AAV-PHP.S CA6.6PP',
     'AAV2/5.GFAP.hM3D(Gq).mCherry',
+    'AAV5.GFAP.hM3D(Gq).mCherry',
     'pGP.AAV.syn.JGCaMP7s.WPRE'
 ]
 
