@@ -50,7 +50,20 @@ def aavinject(*args, **kwargs):
     treatment = {'method': 'virus inject'}
     treatment['virus_id'] = utils.select('Choose virus: ', aav_list)
     treatment['inject_method'] = utils.select('Choose inject method: ', inject_method_list)
-    treatment['inject_dose'] = input('Input dose (ul): ')+'ul'
+    treatment['inject_dose'] = input('Input dose (ul). It is the total amount: ')+'ul'
+    
+    treatment['inject_spots'] = input('Input spot number. Press ENTER for default 1. Intput an integer: ')
+    if treatment['inject_spots'] == '':
+        treatment['inject_spots'] = 1
+    else:
+        treatment['inject_spots'] = int(treatment['inject_spots'])
+
+    treatment['depth_num_of_each_spot'] = input('inject depth of each spot. Press ENTER for default 1. Input an integer: ')
+    if treatment['depth_num_of_each_spot'] == '':
+        treatment['depth_num_of_each_spot'] = 1
+    else:
+        treatment['depth_num_of_each_spot'] = int(treatment['depth_num_of_each_spot'])
+    
     treatment['inject_tool'] = utils.select('Choose inject tool: ', inject_tool_list, **kwargs)
 
     # date ===============================
