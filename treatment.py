@@ -60,9 +60,9 @@ def aavinject(*args, **kwargs):
     treatment['inject_speed'] = input('Inject speed (ul/min): ') + 'ul/min'
 
     # depth ===============================
-    tmp = input('Inject depth (um): ')
+    tmp = input('Inject depth (mm): ')
     if tmp != '':
-        treatment['inject_depth'] = tmp + 'um'
+        treatment['inject_depth'] = tmp + 'mm'
     
     treatment['result'] = input('Result: ')
 
