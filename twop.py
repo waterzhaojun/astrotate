@@ -19,7 +19,7 @@ def folder_format(animalid, date, run):
     out = animalid + '_' + str(date) + '_run' + str(run)
     return(out)
 
-
+# aqua analysis part ========================================================
 def readAquaData(path):
     # This path is the folder path when output from AQuA.
     # Now I will use the excel file as the source of the result.
@@ -108,7 +108,13 @@ def astrocyte_event_aqua_ana_between_groups(result_array, group_titles):
             
             print('%s vs %s: p = %f' % (group_titles[pcompare[0]], group_titles[pcompare[1]], p[1]))
         print('=======================================================')
-        
+
+def aquaStruct(foldername):
+    res = dict()
+    res['excel'] = os.path.join(foldername, 'FeatureTable.xlsx') 
+    res['mov'] = os.path.join(foldername, 'Movie.tif')
+    res['paras'] = os.path.join(foldername, 'aqua_parameters.yml')
+    return(res)
     
 
 def input_data_info(animalid, date, run, datatype):
