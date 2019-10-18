@@ -5,8 +5,9 @@ import argparse
 import util
 
 if __name__ == "__main__":
-    resultfolder = util.get_config()['gene_test_result_folder']
-    company = util.get_config()['gene_test_company']
+    resultfolder = util.get_config()
+    resultfolder = resultfolder['elephantsql']['gene_test_result_folder']
+    company = util.get_config()['elephantsql']['gene_test_company']
     conn = util.connect_server()
     files = [x for x in os.listdir(resultfolder) if x.startswith('OrderResults-') and x[-4:] == '.csv']
     if len(files) != 1:
