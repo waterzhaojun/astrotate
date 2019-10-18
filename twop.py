@@ -24,12 +24,8 @@ def readAquaData(path):
     # This path is the folder path when output from AQuA.
     # Now I will use the excel file as the source of the result.
     # the result is a pandas dataframe
-    #mfile = pd.h5py.File(path, 'r')['res']['featureTable']
-    path = Path(path)
-    foldername = os.path.basename(path)
-    filename = foldername + '_AQuA.xlsx'
-    filepath = os.path.join(path, filename)
-    tmp = pd.read_excel(filepath, 'Sheet1', header = None)
+    
+    tmp = pd.read_excel(path, 'Sheet1', header = None)
     df = pd.DataFrame(columns = tmp.loc[:,0].values)
     nrow = len(tmp.columns)
     for i in range(nrow-1):
@@ -117,12 +113,12 @@ def aquaStruct(foldername):
     return(res)
     
 
-def input_data_info(animalid, date, run, datatype):
-    data = {}
-    datatype = utils.select('Choose data type: ', datatype)
+# def input_data_info(animalid, date, run, datatype):
+#     data = {}
+#     datatype = utils.select('Choose data type: ', datatype)
     
-    if datatype == 'astrocyte_event':
-        data['path'] = folder_format(animalid, date, run)+'_AstrocyteEvent.mat'
+#     if datatype == 'astrocyte_event':
+#         data['path'] = folder_format(animalid, date, run)+'_AstrocyteEvent.mat'
 
 
 # =======================================================================================================================================================
