@@ -121,6 +121,7 @@ class Data:
         self.rawfolder = self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
         self.channel = utils.select('Data from channel: ', ['pmt0', 'pmt1'])
         self.coordinates = self.input_coords()
+        self.depth = int(input('Depth to the surface. Value is based on knobby. The surface refers to the area at the edge of changing from light to dark.'))
         self.objective_lens = self.select_objective()
         self.input_scanbox()
         self.input_situation(exp)
@@ -150,7 +151,7 @@ class Data:
 
     def input_coords(self):
         ref = utils.select('Please choose the ref direction: ', ['N', 'S', 'E', 'W'])
-        coords = input('Please input the coordinates value, seperated by ",": ').replace(' ', '').split(',')
+        coords = input('Please input the coordinates value (x,y), seperated by ",": ').replace(' ', '').split(',')
         coords = [int(x) for x in coords]
         return({'coords': coords, 'ref': ref})
 
@@ -222,7 +223,7 @@ class Exp2P(cg.Experiment):
 
     def __setinfopath__(self, config):
         self.animalfolder = os.path.join(self.catagoryroot, self.animalid)
-        print(self.animalfolder)
+        # print(self.animalfolder)
         if not os.path.exists(self.animalfolder):
             os.mkdir(self.animalfolder)
         path = os.path.join(self.animalfolder, datetime.strptime(self.date, '%m-%d-%Y').strftime('%y%m%d')+'.json')
