@@ -25,7 +25,7 @@ def readAquaData(path):
     # Now I will use the excel file as the source of the result.
     # the result is a pandas dataframe
     
-    tmp = pd.read_excel(path, 'Sheet1', header = None)
+    tmp = pd.read_excel(path, 'Sheet1', header = None, index_col=None)
     df = pd.DataFrame(columns = tmp.loc[:,0].values)
     nrow = len(tmp.columns)
     for i in range(nrow-1):

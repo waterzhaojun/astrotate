@@ -15,7 +15,7 @@ def paired_analysis_idx(array_length):
 
 def group_value_to_dict_element(array):
     res = dict()
-    array = array[~np.isnan(array)]
+    array = array[~pd.isnull(array)]
     res['array'] = array
     res['n'] = len(array)
     res['mean'] = np.mean(array)
