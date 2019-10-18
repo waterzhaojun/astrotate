@@ -36,6 +36,20 @@ def readAquaData(path):
         df.loc[i, :] = tmp.loc[:,i+1].values
     return(df)
 
+def groupAquaData(pathlist):
+    for i in range(len(pathlist)):
+        if i == 0:
+            df = readAquaData(pathlist[i])
+        else:
+            tmp = readAquaData(pathlist[i])
+            df = pd.concat([df, tmp])
+    res = dict()
+    cname = df.columns
+    for i in range(len(cname)):
+        res[df.columns[i]] = analysis.group_value_to_dict_element(df.loc[:,cname[i]].values)
+    return(res)
+
+
 def astrocyte_event_aqua_ana(df):
     # the input df suppose come from aqua
     def __meanStdeArray__(df, colname):
