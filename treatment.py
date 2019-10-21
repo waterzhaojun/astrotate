@@ -100,7 +100,14 @@ def drug(config):
     apply_method = ['ip', 'topic', 'subcutaneous', 'iv', 'cortex', 'ic', 'icv']
     # config = utils.load_config()
     treat['activate_drug'] = utils.select('Choose treated drug: ', config.drug_list)
-    treat['concentration'] = input('Drug concentration (unit is mM, input a number): ')+'mM'
+
+    tmp = input('Drug concentration (If you input a number, unit is mM, If you input like 1mg/cc, it will store what you input): ')
+    try:
+        tmp2 = float(tmp)
+        treat['concentration'] = tmp + 'mM'
+    except:
+        treat['concentration'] = tmp
+        
     tmp = input('Drug soluted in. Press ENTER for default SIF and ignore this input. Input string for specific solution. ')
     if tmp != '':
         treat['activate_drug_solution'] = tmp
