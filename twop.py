@@ -43,7 +43,7 @@ def groupAquaData(pathlist):
                 tmp = readAquaData(pathlist[i])
                 df = pd.concat([df, tmp])
     elif isinstance(pathlist, str):
-        df = readAquaData(pathlist[i])
+        df = readAquaData(pathlist)
             
     res = dict()
     cname = df.columns
