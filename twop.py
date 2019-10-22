@@ -34,12 +34,16 @@ def readAquaData(path):
 
 def groupAquaData(pathlist):
     kickout_columns = ['Index'] # this list need manully change based on AQuA features.
-    for i in range(len(pathlist)):
-        if i == 0:
-            df = readAquaData(pathlist[i])
-        else:
-            tmp = readAquaData(pathlist[i])
-            df = pd.concat([df, tmp])
+    
+    if isinstance(pathlist, list):
+        for i in range(len(pathlist)):
+            if i == 0:
+                df = readAquaData(pathlist[i])
+            else:
+                tmp = readAquaData(pathlist[i])
+                df = pd.concat([df, tmp])
+    elif isinstance(pathlist, str):
+        df = readAquaData(pathlist[i])
             
     res = dict()
     cname = df.columns
