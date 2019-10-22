@@ -24,3 +24,9 @@ def group_value_to_dict_element(array):
     res['sterr'] = res['stdev']/math.sqrt(res['n'])
     return(res)
 
+def identify_value_type(array):
+    variable = list(set(array))
+    if len(variable) == 2:
+        return('logic')
+    else:
+        return('value')
