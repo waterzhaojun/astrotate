@@ -6,7 +6,7 @@ So far I set them by different function but finally I may need to put them all i
 """
 from datetime import datetime
 # from . import utils
-import astrotate.utils as utils
+from astrotate import utils, config
 
 aav_list = [
     'AAV5.CAG.GCaMP6s.WPRE.SV40',
@@ -45,9 +45,10 @@ secondary_antibody_list = ['goat anti rabbit']
 # aavinject is to create a dictionary 
 
 
-def aavinject(*args, **kwargs):
+def aavinject(cg, *args, **kwargs):
 
     treatment = {'method': 'virus inject'}
+    treatment['operator'] = utils.select('Choose the operator: ', cg.operator)
     treatment['virus_id'] = utils.select('Choose virus: ', aav_list)
     treatment['inject_method'] = utils.select('Choose inject method: ', inject_method_list)
     treatment['inject_dose'] = input('Input dose (ul). It is the total amount: ')+'ul'
