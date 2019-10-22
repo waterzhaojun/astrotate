@@ -16,7 +16,7 @@ magnitude_list = [0.8, 1, 2.0, 2.4, 4.0, 4.8, 5.7]
 
 
 def folder_format(animalid, date, run):
-    out = animalid + '_' + str(date) + '_run' + str(run)
+    out = str(date) + '_' + animalid + '_run' + str(run)
     return(out)
 
 # aqua analysis part ========================================================
