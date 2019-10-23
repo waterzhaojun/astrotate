@@ -142,4 +142,10 @@ def projectArrayInput(config):
     result.sort()
     return(result)
 
+def confirm_array_input(val):
+    if not isinstance(val, list):
+        return([val])
+    else:
+        return(val)
+
 
