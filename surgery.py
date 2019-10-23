@@ -68,3 +68,8 @@ def get_surgery_animals(cg):
     animals = [x for x in animals if x[-5:] == '.json']
     animals_path = [os.path.join(surgeryroot, x) for x in animals]
     return(animals, animals_path)
+
+def animalinfo(animalid, cg):
+    path = os.path.join(cg.system_path['root'], cg.system_path['surgery'], animalid + '.json')
+    info = utils.readjson(path)
+    return(info, path)
