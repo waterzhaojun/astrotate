@@ -60,12 +60,11 @@ def add_note(animalid, note, config):
     record['note'].append([utils.format_date(datetime.today().strftime('%m-%d-%Y')), note])
     print(record)
     utils.writejson(path, record)
-    
-# available_treatment = ['virus inject', 'chemical treatment', 'window setup', 'CSD']
-# def check_available_treatment():
-#     for i in range(len(available_treatment)):
-#         print('%d ---> %s'% (i, available_treatment[i]))
-        
-#def get_info(animalid):
-#    path = os.path.join()
-    
+
+# get all animal id and path in surgery part.    
+def get_surgery_animals(cg):
+    surgeryroot = os.path.join(cg.system_path['root'], cg.system_path['surgery'])
+    animals = os.listdir(surgeryroot)
+    animals = [x for x in animals if x[-5:] == '.json']
+    animals_path = [os.path.join(surgeryroot, x) for x in animals]
+    return(animals, animals_path)

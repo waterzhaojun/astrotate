@@ -121,7 +121,8 @@ def aquaStruct(foldername):
     res['mov'] = os.path.join(foldername, 'Movie.tif')
     res['paras'] = os.path.join(foldername, 'aqua_parameters.yml')
     return(res)
-    
+
+
 
 # def input_data_info(animalid, date, run, datatype):
 #     data = {}
@@ -129,6 +130,16 @@ def aquaStruct(foldername):
     
 #     if datatype == 'astrocyte_event':
 #         data['path'] = folder_format(animalid, date, run)+'_AstrocyteEvent.mat'
+
+# ===================================================================
+# query part 
+def get_twop_animals(cgpath):
+    twoproot = os.path.join(cgpath.system_path['root'], cgpath.system_path['twophoton'])
+    animals = os.listdir(twoproot)
+    # animals = [os.path.join(twoproot, x) for x in animals]
+    animals = [x for x in animals if os.path.isdir(os.path.join(twoproot, x))]
+    animals_path = [os.path.join(twoproot, x) for x in animals]
+    return(animals, animals_path)
 
 
 # =======================================================================================================================================================
