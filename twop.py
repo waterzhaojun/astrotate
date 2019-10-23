@@ -133,14 +133,24 @@ def aquaStruct(foldername):
 
 # ===================================================================
 # query part 
-def get_twop_animals(cgpath):
-    twoproot = os.path.join(cgpath.system_path['root'], cgpath.system_path['twophoton'])
+def get_twop_animals(cgobj):
+    twoproot = os.path.join(cgobj.system_path['root'], cgobj.system_path['twophoton'])
     animals = os.listdir(twoproot)
     # animals = [os.path.join(twoproot, x) for x in animals]
     animals = [x for x in animals if os.path.isdir(os.path.join(twoproot, x))]
     animals_path = [os.path.join(twoproot, x) for x in animals]
     return(animals, animals_path)
 
+def get_animal_twop_explist(animallist, cgobj):
+    animallist = utils.confirm_array_input(animallist)
+    twoproot = os.path.join(cgobj.system_path['root'], cgobj.system_path['twophoton'])
+    explist = []
+    for animal in animallist:
+        path = os.path.join(twoproot, animal)
+        dates = os.listdir(path)
+        dates = [os.path.join(path, x, 'info.json') for x in dates if os.path.isdir(os.path.join(path, x))]
+        explist = explist + dates
+    return(explist)
 
 # =======================================================================================================================================================
 # =======================================================================================================================================================
