@@ -4,7 +4,6 @@ import numpy as np
 # from . import array, utils, treatment, config as cg
 from astrotate import array, utils, treatment, config as cg, analysis
 import json
-import scipy.stats as stats
 from datetime import datetime
 import h5py
 from pathlib import Path
