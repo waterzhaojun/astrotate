@@ -33,20 +33,20 @@ def readAquaData(path):
 
 def groupAquaData(pathlist):
     kickout_columns = ['Index'] # this list need manully change based on AQuA features.
-    res = {'n_of_events':{'array':[]}}
+    res = {'n_of_events':{'array':np.array([])}}
 
     if isinstance(pathlist, list):
         for i in range(len(pathlist)):
             if i == 0:
                 df = readAquaData(pathlist[i])
-                res['n_of_events']['array'].append(len(df))
+                res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(df))
             else:
                 tmp = readAquaData(pathlist[i])
                 df = pd.concat([df, tmp])
-                res['n_of_events']['array'].append(len(tmp))
+                res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(tmp))
     elif isinstance(pathlist, str):
         df = readAquaData(pathlist)
-        res['n_of_events']['array'].append(len(df))
+        res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(df))
             
     res['n_of_events'] = analysis.group_value_to_dict_element(res['n_of_events']['array'])
     
