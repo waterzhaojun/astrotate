@@ -91,29 +91,7 @@ def astrocyte_event_aqua_ana(df):
     
     return(result)
 
-def astrocyte_event_aqua_ana_between_groups(result_array, group_titles):
-    # the result input is the output from astrocyte_event_aqua_ana function
-    keys = list(result_array[0].keys())
-    
-    for key in keys[1:]:
-        print(key)
-        
-        fig, ax = plt.subplots()
-        width = 1/len(result_array)
-        for i in range(len(result_array)):
-            ax.bar(i/len(result_array), result_array[i][key]['mean'], width, yerr = result_array[i][key]['stdev'])
-            
-        ax.set_title(key)
-        ax.legend(group_titles)
-        plt.show()
 
-        plist = analysis.paired_analysis_idx(len(result_array))
-        for pcompare in plist:
-            p = stats.mannwhitneyu(np.array(result_array[pcompare[0]][key]['array']).astype(float), 
-                                   np.array(result_array[pcompare[1]][key]['array']).astype(float))
-            
-            print('%s vs %s: p = %f' % (group_titles[pcompare[0]], group_titles[pcompare[1]], p[1]))
-        print('=======================================================')
 
 def aquaStruct(foldername):
     res = dict()
