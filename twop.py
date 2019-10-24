@@ -130,9 +130,13 @@ def get_animal_twop_explist(animallist, cgobj):
         explist = explist + dates
     return(explist)
 
-def situation_data_path(infolist, situation, time = None, analysis_method = 'AQuA'):
-    # When you get a list of animal info files in the group, you can use
-    # this function to get a list of folder path for certain situation of this animal.
+def situation_data_path(infolist, situation, time = None, analysis_method = 'AQuA', *args):
+    """
+    When you get a list of animal info files in the group, you can use
+    this function to get a list of folder path for certain situation of this animal.
+    If you have more restrain condition, give a two element array arg as ['magnitude', 5.7].
+    So far the condition only support one level query.
+    """
     infolist = utils.confirm_array_input(infolist)
     datafolders = []
     for i in infolist:
@@ -141,6 +145,9 @@ def situation_data_path(infolist, situation, time = None, analysis_method = 'AQu
         data = [x for x in data if (x['situation'] == situation) and (x['analysis_method'] == analysis_method)]
         if time != None:
             data = [x for x in data if x['time_after_treatment'] == time]
+
+        for arg in args:
+            data = [x for x in data if x[arg[0]] == arg[1]]
         data = [os.path.join(os.path.dirname(i), x['analysis_result_path']) for x in data]
         datafolders = datafolders + data
     return(datafolders)
