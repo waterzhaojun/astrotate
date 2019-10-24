@@ -43,7 +43,7 @@ def analysis_between_groups(result_array, group_titles):
     """
     keys = list(result_array[0].keys())
     
-    for key in keys[1:]:
+    for key in keys:
         print(key)
         
         fig, ax = plt.subplots()
