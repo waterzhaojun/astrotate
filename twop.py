@@ -134,6 +134,7 @@ def aquaStruct(foldername):
 # ===================================================================
 # query part 
 def get_twop_animals(cgobj):
+    # This function is to return a list of animals that had two photon experiment.
     twoproot = os.path.join(cgobj.system_path['root'], cgobj.system_path['twophoton'])
     animals = os.listdir(twoproot)
     # animals = [os.path.join(twoproot, x) for x in animals]
@@ -152,6 +153,20 @@ def get_animal_twop_explist(animallist, cgobj):
         explist = explist + dates
     return(explist)
 
+def situation_data_path(infolist, situation, time = None, analysis_method = 'AQuA'):
+    # When you get a list of animal info files in the group, you can use
+    # this function to get a list of folder path for certain situation of this animal.
+    infolist = utils.confirm_array_input(infolist)
+    datafolders = []
+    for i in infolist:
+        info = utils.readjson(i)
+        data = info['data']
+        data = [x for x in data if (x['situation'] == situation) and (x['analysis_method'] == analysis_method)]
+        if time != None:
+            data = [x for x in data if x['time_after_treatment'] == time]
+        data = [os.path.join(os.path.dirname(i), x['analysis_result_path']) for x in data]
+        datafolders = datafolders + data
+    return(datafolders)
 # =======================================================================================================================================================
 # =======================================================================================================================================================
 # Data class is an object for two photon data. It contains the information how the data was recorded, under which situation when the animal experiencing 
@@ -227,9 +242,11 @@ class Data:
         for key, value in exp.treatment.items():
             t.append([key, value])
         tarr = [str(x[0])+': '+x[1]['method'] for x in t]
-        self.situation = {}
-        self.situation['treatment'] = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
-        self.situation['time_after_treatment'] = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
+        #self.situation = {}
+        #self.situation['treatment'] = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
+        #self.situation['time_after_treatment'] = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
+        self.situation = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
+        self.time_after_treatment = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
 
     def __analysis_result_path__(self, exp):
         # the analysis result file is suppose to save at the same folder with info.json
