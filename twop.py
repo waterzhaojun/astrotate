@@ -9,7 +9,7 @@ from datetime import datetime
 import h5py
 from pathlib import Path
 import math
-import matplotlib.pyplot as plt
+
 
 objective = {'Nikon': ['16X']}
 magnitude_list = [0.8, 1, 2.0, 2.4, 4.0, 4.8, 5.7]
