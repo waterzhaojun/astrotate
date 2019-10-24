@@ -54,7 +54,7 @@ def analysis_between_groups(result_array, group_titles):
         ax.legend(group_titles)
         plt.show()
 
-        plist = analysis.paired_analysis_idx(len(result_array))
+        plist = paired_analysis_idx(len(result_array))
         for pcompare in plist:
             p = stats.mannwhitneyu(np.array(result_array[pcompare[0]][key]['array']).astype(float), 
                                    np.array(result_array[pcompare[1]][key]['array']).astype(float))
