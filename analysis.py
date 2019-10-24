@@ -6,16 +6,28 @@ import scipy.stats as stats
 
 def paired_analysis_idx(array_length):
     """
-    This function is to grap two element in each round. 
+    This function is to grap two element from an array in each round. 
     The title should has the same length as array representing 
-    array element title
+    array element title. This function can help to do paired t test or draw significant line.
     """
-    # total_num = array_length * array_length / 2
-    output = []
-    for i in range(array_length):
-        for j in range(i+1, array_length):
-            output.append([i,j])
-    return(output)
+    pair = []
+    level = []
+    levelflag = 1
+    headstart = 0
+    length = array_length
+    for gap in range(1,length):
+        for head in range(gap):
+            tmphead = head
+            tail = tmphead + gap
+            while tail <= length -1:
+                newpair = [tmphead, tail]
+                print(newpair, levelflag)
+                pair.append(newpair)
+                level.append(levelflag)
+                tmphead = tail
+                tail = tmphead+gap
+            levelflag = min(levelflag + 1, level[-1]+1)
+    return(pair, level)
 
 def group_value_to_dict_element(array):
     res = dict()
@@ -62,3 +74,4 @@ def analysis_between_groups(result_array, group_titles):
             
             print('%s vs %s: p = %f' % (group_titles[pcompare[0]], group_titles[pcompare[1]], p[1]))
         print('=======================================================')
+

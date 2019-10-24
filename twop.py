@@ -60,58 +60,12 @@ def groupAquaData(pathlist):
     return(res)
 
 
-def astrocyte_event_aqua_ana(df):
-    # the input df suppose come from aqua
-    def __meanStdeArray__(df, colname):
-        tmp = {}
-        tmp['mean'] = np.mean(df.loc[:, colname])
-        tmp['stdev'] = np.std(df.loc[:, colname])/math.sqrt(len(df.loc[:, colname].values))
-        tmp['array'] = df.loc[:, colname].values
-        return(tmp)
-
-    result = {}
-    result['nEvent'] = len(df)
-    result['area'] = __meanStdeArray__(df, 'Basic - Area')
-    result['perimeter'] = __meanStdeArray__(df, 'Basic - Perimeter')
-    result['max dff'] = __meanStdeArray__(df, 'Curve - Max Dff')
-    result['duration_50_to_50'] = __meanStdeArray__(df, 'Curve - Duration 50% to 50%')
-    result['duration_10_to_10'] = __meanStdeArray__(df, 'Curve - Duration 10% to 10%')
-    result['rising_duration_10_to_90'] = __meanStdeArray__(df, 'Curve - Rising duration 10% to 90%')
-    result['decaying_duration_90_to_10'] = __meanStdeArray__(df, 'Curve - Decaying duration 90% to 10%')
-    result['decay_tau'] = __meanStdeArray__(df, 'Curve - Decay tau')
-    result['propagation_onset_overall'] = __meanStdeArray__(df, 'Propagation - onset - overall')
-    result['propagation_onset_anterior'] = __meanStdeArray__(df, 'Propagation - onset - one direction - Anterior')
-    result['propagation_onset_posterior'] = __meanStdeArray__(df, 'Propagation - onset - one direction - Posterior')
-    result['propagation_onset_left'] = __meanStdeArray__(df, 'Propagation - onset - one direction - Left')
-    result['propagation_onset_right'] = __meanStdeArray__(df, 'Propagation - onset - one direction - Right')
-    result['propagation_offset_overall'] = __meanStdeArray__(df, 'Propagation - offset - overall')
-    result['propagation_offset_anterior'] = __meanStdeArray__(df, 'Propagation - offset - one direction - Anterior')
-    result['propagation_offset_posterior'] = __meanStdeArray__(df, 'Propagation - offset - one direction - Posterior')
-    result['propagation_offset_left'] = __meanStdeArray__(df, 'Propagation - offset - one direction - Left')
-    result['propagation_offset_right'] = __meanStdeArray__(df, 'Propagation - offset - one direction - Right')
-    result['network_temporal_density'] = __meanStdeArray__(df, 'Network - Temporal density')
-    result['network_temporal_density_similar_size'] = __meanStdeArray__(df, 'Network - Temporal density with similar size only')
-    result['network_spatial_density'] = __meanStdeArray__(df, 'Network - Spatial density')
-    
-    return(result)
-
-
-
 def aquaStruct(foldername):
     res = dict()
     res['excel'] = os.path.join(foldername, 'FeatureTable.xlsx') 
     res['mov'] = os.path.join(foldername, 'Movie.tif')
     res['paras'] = os.path.join(foldername, 'aqua_parameters.yml')
     return(res)
-
-
-
-# def input_data_info(animalid, date, run, datatype):
-#     data = {}
-#     datatype = utils.select('Choose data type: ', datatype)
-    
-#     if datatype == 'astrocyte_event':
-#         data['path'] = folder_format(animalid, date, run)+'_AstrocyteEvent.mat'
 
 # ===================================================================
 # query part 
