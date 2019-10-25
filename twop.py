@@ -49,12 +49,14 @@ def groupAquaData(pathlist):
         res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(df))
             
     res['n_of_events'] = analysis.group_value_to_dict_element(res['n_of_events']['array'])
+    res['n_of_events']['analysis_method'] = ['box']
     
     cname = df.columns
     cname = [x for x in cname if x not in kickout_columns]
     for i in cname:
         try:
             res[i] = analysis.group_value_to_dict_element(df.loc[:,i].values)
+            res[i]['analysis_method'] = ['box']
         except:
             pass
     return(res)
