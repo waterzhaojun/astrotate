@@ -51,7 +51,7 @@ def groupAquaData(pathlist):
     res['n_of_events'] = analysis.group_value_to_dict_element(res['n_of_events']['array'])
     res['n_of_events']['analysis_method'] = ['box']
     
-    res['event_character'] = {'character_columns': ['Basic - Area', 'Curve - Max Dff', 'Curve - Duration 50% to 50%']}
+    res['event_character'] = {'character_columns': ['Basic - Area', 'Curve - Duration 50% to 50%', 'Curve - Max Dff']}
     res['event_character']['array'] = df[res['event_character']['character_columns']].values.tolist()
     res['event_character']['analysis_method'] = ['scatter']
 
