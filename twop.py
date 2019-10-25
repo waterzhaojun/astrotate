@@ -51,6 +51,8 @@ def groupAquaData(pathlist):
     res['n_of_events'] = analysis.group_value_to_dict_element(res['n_of_events']['array'])
     res['n_of_events']['analysis_method'] = ['box']
     
+    res['event_character'] = {'array': df[['Basic - Area', 'Curve - Max Dff', 'Curve - Duration 50% to 50%']].values.tolist()}
+
     cname = df.columns
     cname = [x for x in cname if x not in kickout_columns]
     for i in cname:
