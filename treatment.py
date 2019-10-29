@@ -165,10 +165,6 @@ def optoStimulation():
         treat['on_duration']: input('In each loop, stimulation on duration, unit is sec. input a float number: ')+'sec'
     return(treat)
 
-def purfusion():
-    treat = {'method': 'PFA purfusion'}
-    return(treat)
-
 def ihcstain():
     treat = {'method': 'IHC stain'}
 
@@ -242,14 +238,16 @@ class Treatment():
         props = [x for x in dir(self) if (not callable(x)) and x[0:2] != '__']
         return(props)
 
-
-
-
 class CSD(Treatment):
-    
     def __init__(self):
         csd_method_list = ['pinprick', 'KCl']
         super().__init__('CSD', 'CSD')
         self.apply_method = utils.select('Choose CSD method: ', csd_method_list)
  
-        
+class Baseline(Treatment):
+    def __init__(self):
+        super().__init__('baseline', 'baseline')
+
+class Purfusion(Treatment):
+    def __init__(self):
+        super().__init('PFA purfusion', 'PFA purfusion')
