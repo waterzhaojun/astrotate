@@ -5,7 +5,7 @@ So far I set them by different function but finally I may need to put them all i
 
 """
 from datetime import datetime
-# from . import utils
+import inspect
 from astrotate import utils, config
 
 aav_list = [
@@ -191,3 +191,65 @@ def ihcstain():
 
         
     return(treat)
+
+def input_time(title, allow_none = True):
+    
+    if allow_none:
+        note = '=== %s treatment start time.===\nPress Enter to leave it blank. Input 1 for present time. Input HH:MM for certain time: ' % title
+    else:
+        note = '=== %s treatment start time.===\nInput 1 for now. Input HH:MM for certain time: ' % title
+    tmp = input(note)
+    
+    if tmp == '1':
+        value = datetime.now().strftime('%H:%M')
+    elif tmp == '':
+        if not allow_none:
+            raise Exception('need a valid time.')
+        else:
+            value = tmp
+    else:
+        value = tmp
+    return(value)
+
+def input_date(title, allow_none = True):
+
+    if allow_none:
+        note = '=== %s treatment start date.===\nPress Enter to ignore this.\nInput 1 for today.\nInput mm-dd-yyyy for detail date: ' % title
+    else:
+        note = '=== %s treatment start date.===\nInput 1 for today.\nInput mm-dd-yyyy for detail date: ' % title
+    
+    tmp = input(note)
+    if tmp == '1':
+        value = utils.format_date(datetime.now().strftime('%m-%d-%Y'))
+    elif tmp == '':
+        if not allow_none:
+            raise Exception('Need a valid date.')
+        else:
+            value = tmp
+    else:
+        value = utils.format_date(datetime.now().strftime('%m-%d-%Y'))
+    return(value)
+    
+#========================================================
+
+class Treatment():
+    def __init__(self, method, title):
+        self.method = method
+        self.__title__ = title
+        self.time = input_time(self.__title__)
+        self.date = input_date(self.__title__)
+    def to_dict(self):
+        props = [x for x in dir(self) if (not callable(x)) and x[0:2] != '__']
+        return(props)
+
+
+
+
+class CSD(Treatment):
+    
+    def __init__(self):
+        csd_method_list = ['pinprick', 'KCl']
+        super().__init__('CSD', 'CSD')
+        self.apply_method = utils.select('Choose CSD method: ', csd_method_list)
+ 
+        
