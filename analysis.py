@@ -31,7 +31,10 @@ def paired_analysis_idx(array_length):
 
 def group_value_to_dict_element(array):
     res = dict()
-    array = array[~pd.isnull(array)]
+    try:  # <=========this place need to idenfity if is come from pd, if yes, do this
+        array = array[~pd.isnull(array)]
+    except:
+        pass
     res['array'] = array
     res['n'] = len(array)
     res['mean'] = np.mean(array)
