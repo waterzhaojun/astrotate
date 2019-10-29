@@ -31,10 +31,8 @@ def paired_analysis_idx(array_length):
 
 def group_value_to_dict_element(array):
     res = dict()
-    try:  # <=========this place need to idenfity if is come from pd, if yes, do this
-        array = array[~pd.isnull(array)]
-    except:
-        pass
+    array = array[~pd.isnull(array)]
+    
     res['array'] = array
     res['n'] = len(array)
     res['mean'] = np.mean(array)
@@ -94,21 +92,21 @@ def ax_barplot(ax, result_array, title, group_titles):
     # This function will use bar plot to show the figure.
     # ax is the subplot from plt.subplot(n,m)
     
-    def label_diff(ax,pair,text,X,topy,level):
+    def label_diff(ax,pair,text,X,ylevel):
         x = (X[pair[0]]+X[pair[1]])/2
-        y = (1+0.1*level)*topy
+        y = ylevel
         ax.annotate(text, xy=(x,y), zorder=10, ha = 'center', va = 'center', backgroundcolor='w')
         ax.plot([X[pair[0]], X[pair[1]]], [y, y],'-',lw=1,color = 'grey', marker = TICKDOWN,markersize = 3)
 
     def pvalue_text(p):
         if p > 0.05:
-            text = 'p=%.2f' % p
+            text = ''# % p
         elif p <= 0.05 and p > 0.01:
-            text = '* p=%.3f' % p
+            text = '*'# % p
         elif p<=0.01 and p > 0.005:
-            text = '** p=%.4f' % p
+            text = '**'# % p
         else:
-            text = '*** p=%.1e' % p
+            text = '***'# % p
         return(text)
     
     # This code should set before make subplot. It is the fundmental.
@@ -119,7 +117,7 @@ def ax_barplot(ax, result_array, title, group_titles):
     
     xlocation = 4*np.arange(len(result_array))*width/3 + 0.5*width
     ax.set_xticks(xlocation)
-    ax.set_xticklabels(group_titles)
+    ax.set_xticklabels(group_titles, rotation=45)
 
     yvalue = [x['mean'] for x in result_array]
     errvalue = [x['sterr'] for x in result_array]
@@ -130,15 +128,18 @@ def ax_barplot(ax, result_array, title, group_titles):
         
     ax.set_title(title)
     
-    topy = max([x['mean']+x['sterr'] for x in result_array])
+    standardy = max([x['mean']+x['sterr'] for x in result_array])
     plist, level = paired_analysis_idx(len(result_array))
+    levelempty = [0]*len(plist)
+    
     for i in range(len(plist)):
         p = stats.mannwhitneyu(np.array(result_array[plist[i][0]]['array']).astype(float), 
                                 np.array(result_array[plist[i][1]]['array']).astype(float))[1]
         if p < 0.05:
-            label_diff(ax, plist[i], pvalue_text(p), xlocation, topy, level[i])
+            levelempty[level[i]-1] = 1
+            label_diff(ax, plist[i], pvalue_text(p), xlocation, standardy + standardy * 0.12 * sum(levelempty[0:level[i]]))
     
-    ax.set_ylim(0.0, topy*(1+0.2*len(plist)))
+    ax.set_ylim(0.0, standardy + standardy * 0.12 * sum(levelempty) +0.1 * standardy)
 
 
 def ax_scatter(ax, result_arrays, title, group_titles):
