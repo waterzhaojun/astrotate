@@ -24,9 +24,9 @@ def init_animal(config):
         animal['note'] = ''
         animal['info']['species'] = utils.select('Choose animal strain: ', ['rat', 'mouse'])
         if animal['info']['species'] == 'rat':
-            animal['info']['strain'] == 'SD'
+            animal['info']['strain'] = 'SD'
         elif animal['info']['species'] == 'mouse':
-            animal['info']['strain'] == utils.select('What is the strain: ', ['C57'])
+            animal['info']['strain'] = utils.select('What is the strain: ', ['C57'])
         animal['info']['gender'] = utils.select('Choose animal gender: ', ['M', 'F'])
         tmp = input('Animal birthday (format month-day-year). Press ENTER to ignore: ')
         if tmp != '':
