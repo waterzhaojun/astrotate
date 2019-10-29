@@ -49,34 +49,42 @@ def identify_value_type(array):
     else:
         return('value')
 
-def analysis_between_groups(result_array, group_titles):
+def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3):
     """
     When we analyse a group of data, we will get a dict containing series
     of analysis feature. If the analysis method is the same, different group
     will get a dict with same key words. This function is to plot along
-    the keys to show different between groups. Right now it only take two groups.
+    the keys to show different between groups. Right now it only tested two groups.
     """
-    keys = list(result_array[0].keys())
+    def __intersection__(lists): 
+        lst1 = lists[0]
+        for i in range(1, len(lists)):
+            tmplst = lists[i]
+            lst1 = list(set(lst1) & set(tmplst))
+        return(lst1)
     
-    for key in keys:
-        print(key)
+    keys = list(result_array[0].keys())
+    n_rows = math.ceil(len(keys)/n_fig_of_each_row)
+    plt.rcParams["figure.figsize"] = [6 * n_fig_of_each_row, 6 * n_rows] 
+    #plt.subplots_adjust(wspace = 1)
+    #fig, axs = plt.subplots(n_rows, n_fig_of_each_row)
+    fig = plt.figure()
+    
+    for i in range(len(keys)):
+        axrow = int(i / n_fig_of_each_row)
+        axcol = i % n_fig_of_each_row
         
-        fig, ax = plt.subplots()
-        width = 1/len(result_array)
-        for i in range(len(result_array)):
-            ax.bar(i/len(result_array), result_array[i][key]['mean'], width, yerr = result_array[i][key]['sterr'])
-            
-        ax.set_title(key)
-        ax.legend(group_titles)
-        plt.show()
-
-        plist = paired_analysis_idx(len(result_array))
-        for pcompare in plist:
-            p = stats.mannwhitneyu(np.array(result_array[pcompare[0]][key]['array']).astype(float), 
-                                   np.array(result_array[pcompare[1]][key]['array']).astype(float))
-            
-            print('%s vs %s: p = %f' % (group_titles[pcompare[0]], group_titles[pcompare[1]], p[1]))
-        print('=======================================================')
+        ax = fig.add_subplot(n_rows, n_fig_of_each_row, i+1)
+        key = keys[i]
+        dictarray = [x[key] for x in result_array]
+        analysis = __intersection__([x[key]['analysis_method'] for x in result_array])
+        if 'box' in analysis:
+            ax_barplot(ax, dictarray, key, group_titles)
+        elif 'scatter' in analysis:
+            ax_scatter(ax, dictarray, key, group_titles)
+    #fig.tight_layout()
+    fig.subplots_adjust(hspace = 0.5, wspace = 0.7)
+    plt.show()
 
 #============================================================================================================
 # plot methods ==============================================================================================
@@ -132,6 +140,7 @@ def ax_barplot(ax, result_array, title, group_titles):
     
     ax.set_ylim(0.0, topy*(1+0.2*len(plist)))
 
+
 def ax_scatter(ax, result_arrays, title, group_titles):
     markerlist = ['s', '^']
     colors = plt.cm.tab10(np.linspace(0,1,10))
@@ -147,3 +156,21 @@ def ax_scatter(ax, result_arrays, title, group_titles):
     ax.set_ylabel(result_arrays[0]['character_columns'][1])
     ax.legend(group_titles)
     ax.set_title(title)
+
+def ax_3dscatter(ax, result_arrays, title, group_titles):
+    markerlist = ['s', '^']
+    for i in range(len(result_arrays)):
+        array = result_arrays[i]
+        X = np.array([x[0] for x in array['array']])
+        Y = np.array([x[1] for x in array['array']])
+        Z = np.array([x[2] for x in array['array']])
+        ax.scatter(X, Y, Z, marker=markerlist[i], alpha = 0.3)
+        #ax.plot_wireframe(X,Y,Z, marker = markerlist[i], alpha = 0.2)
+    ax.set_xlabel(result_arrays[0]['character_columns'][0])
+    ax.set_ylabel(result_arrays[0]['character_columns'][1])
+    ax.set_ylabel(result_arrays[0]['character_columns'][2])
+    ax.legend(group_titles)
+    ax.set_title(title)
+
+def ax_hist2d(ax, result_arrays, title, group_titles):
+    pass
