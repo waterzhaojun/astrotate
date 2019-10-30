@@ -132,6 +132,9 @@ def drug(config):
     if treat['apply_method'] == 'iv': # set parameters for iv treatment
         treat['apply_speed'] = input('iv drug injection speed (unit is ml/min, input number): ') + 'ml/min'
     
+    if treat['apply_method'] in ['iv', 'ip']:
+        treat['dose'] = input('inject dose (unit is cc. just input number)') + 'ml'
+
     utils.input_time(treat, 'apply_time', 'Treatment start time', allow_none = False)
     utils.input_date(treat, 'date', 'Treat date', allow_none = False)
 
