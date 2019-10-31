@@ -8,7 +8,7 @@ import os
 
 import pandas as pd
 import numpy as np
-from astrotate import array, utils, treatment, config as cg
+from astrotate import array, utils, treatment, config as cg, analysis
 import json
 from datetime import datetime
 
@@ -167,22 +167,22 @@ def singleneuron_analysis(df):
     # after you extract a df, you can use this function to build an analysis dict, 
     # and compare different analysis dicts
     res = {}
-    res['activation rate'] = build_chi_character(df['activation'].values)
-    res['immediate activation rate'] = build_chi_character(df['immed_activation'].values)
-    res['activation duration'] = build_ttest_character(df['acti_duration'].values)
-    res['activation delay'] = build_ttest_character(df['acti_delay'].values)
-    res['activation magnitude'] = build_ttest_character(df['acti_magnitude'].values)
-    res['threshold sensitization rate'] = build_chi_character(df['th'].values)
-    res['threshold sensitization duration'] = build_ttest_character(df['th_duration'].values)
-    res['threshold sensitization delay'] = build_ttest_character(df['th_delay'].values)
-    res['threshold sensitization magnitude'] = build_ttest_character(df['th_magnitude'].values)
-    res['super threshold sensitization rate'] = build_chi_character(df['sth'].values)
-    res['super threshold sensitization duration'] =build_ttest_character(df['sth_duration'].values)
-    res['super threshold sensitization delay'] =build_ttest_character(df['sth_delay'].values)
-    res['super threshold sensitization magnitude'] =build_ttest_character(df['sth_magnitude'].values)
-    res['activation AUC'] = build_ttest_character(df['area_activated'].values)
-    res['threshold sensitization AUC'] = build_ttest_character(df['th_area_activated'].values)
-    res['super threshold sensitization AUC'] = build_ttest_character(df['sth_area_activated'].values)
+    res['activation rate'] = analysis.build_chi_character(df['activation'].values)
+    res['immediate activation rate'] = analysis.build_chi_character(df['immed_activation'].values)
+    res['activation duration'] = analysis.build_ttest_character(df['acti_duration'].values)
+    res['activation delay'] = analysis.build_ttest_character(df['acti_delay'].values)
+    res['activation magnitude'] = analysis.build_ttest_character(df['acti_magnitude'].values)
+    res['threshold sensitization rate'] = analysis.build_chi_character(df['th'].values)
+    res['threshold sensitization duration'] = analysis.build_ttest_character(df['th_duration'].values)
+    res['threshold sensitization delay'] = analysis.build_ttest_character(df['th_delay'].values)
+    res['threshold sensitization magnitude'] = analysis.build_ttest_character(df['th_magnitude'].values)
+    res['super threshold sensitization rate'] = analysis.build_chi_character(df['sth'].values)
+    res['super threshold sensitization duration'] =analysis.build_ttest_character(df['sth_duration'].values)
+    res['super threshold sensitization delay'] =analysis.build_ttest_character(df['sth_delay'].values)
+    res['super threshold sensitization magnitude'] =analysis.build_ttest_character(df['sth_magnitude'].values)
+    res['activation AUC'] = analysis.build_ttest_character(df['area_activated'].values)
+    res['threshold sensitization AUC'] = analysis.build_ttest_character(df['th_area_activated'].values)
+    res['super threshold sensitization AUC'] = analysis.build_ttest_character(df['sth_area_activated'].values)
     return(res)
     
 # ========================================================================================================================================
