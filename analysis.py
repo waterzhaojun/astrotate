@@ -30,6 +30,8 @@ def paired_analysis_idx(array_length):
     return(pair, level)
 
 def group_value_to_dict_element(array):
+    # since now have build_ttest_character, better not use this function
+    # I will deprecate it finally.
     res = dict()
     array = array[~pd.isnull(array)]
     
@@ -39,6 +41,30 @@ def group_value_to_dict_element(array):
     res['stdev'] = np.std(array)
     res['sterr'] = res['stdev']/math.sqrt(res['n'])
     return(res)
+
+def build_chi_character(array, posSymbol = 'Y', method = 'RadialBar'):
+    array = array[~pd.isnull(array)]
+    res = {}
+    res['array'] = [int(x == posSymbol) for x in array]
+    res['n'] = len(array)
+    res['pos'] = sum(res['array'])
+    res['neg'] = res['n'] - res['pos']
+    res['percentage'] = res['pos'] / res['n']
+    res['analysis_method'] = method
+    return(res)
+
+def build_ttest_character(array, method = 'box'):
+    res = dict()
+    array = array[~pd.isnull(array)]
+    
+    res['array'] = array
+    res['n'] = len(array)
+    res['mean'] = np.mean(array)
+    res['stdev'] = np.std(array)
+    res['sterr'] = res['stdev']/math.sqrt(res['n'])
+    res['analysis_method'] = method
+    return(res)
+
 
 def identify_value_type(array):
     variable = list(set(array))
