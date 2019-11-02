@@ -42,7 +42,7 @@ def group_value_to_dict_element(array):
     res['sterr'] = res['stdev']/math.sqrt(res['n'])
     return(res)
 
-def build_chi_character(array, posSymbol = 'Y', method = 'RadialBar'):
+def build_chi_character(array, posSymbol = 'Y', method = 'polarbar'):
     array = array[~pd.isnull(array)]
     res = {}
     res['array'] = [int(x == posSymbol) for x in array]

@@ -164,25 +164,35 @@ def treatmentMethod(info, method):
 # analyse part ========================================================================
 # ================================================================================
 def singleneuron_analysis(df):
-    # after you extract a df, you can use this function to build an analysis dict, 
-    # and compare different analysis dicts
     res = {}
-    res['activation rate'] = analysis.build_chi_character(df['activation'].values)
-    res['immediate activation rate'] = analysis.build_chi_character(df['immed_activation'].values)
-    res['activation duration'] = analysis.build_ttest_character(df['acti_duration'].values)
-    res['activation delay'] = analysis.build_ttest_character(df['acti_delay'].values)
-    res['activation magnitude'] = analysis.build_ttest_character(df['acti_magnitude'].values)
-    res['threshold sensitization rate'] = analysis.build_chi_character(df['th'].values)
-    res['threshold sensitization duration'] = analysis.build_ttest_character(df['th_duration'].values)
-    res['threshold sensitization delay'] = analysis.build_ttest_character(df['th_delay'].values)
-    res['threshold sensitization magnitude'] = analysis.build_ttest_character(df['th_magnitude'].values)
-    res['super threshold sensitization rate'] = analysis.build_chi_character(df['sth'].values)
-    res['super threshold sensitization duration'] =analysis.build_ttest_character(df['sth_duration'].values)
-    res['super threshold sensitization delay'] =analysis.build_ttest_character(df['sth_delay'].values)
-    res['super threshold sensitization magnitude'] =analysis.build_ttest_character(df['sth_magnitude'].values)
-    res['activation AUC'] = analysis.build_ttest_character(df['area_activated'].values)
-    res['threshold sensitization AUC'] = analysis.build_ttest_character(df['th_area_activated'].values)
-    res['super threshold sensitization AUC'] = analysis.build_ttest_character(df['sth_area_activated'].values)
+    res['activation rate'] = build_chi_character(df['activation'].values)
+    res['immediate activation rate'] = build_chi_character(df['immed_activation'].values)
+    res['activation duration'] = build_ttest_character(df['acti_duration'].values)
+    res['activation delay'] = build_ttest_character(df['acti_delay'].values)
+    res['activation magnitude'] = build_ttest_character(df['acti_magnitude'].values)
+    res['threshold sensitization rate'] = build_chi_character(df['th'].values)
+    res['threshold sensitization duration'] = build_ttest_character(df['th_duration'].values)
+    res['threshold sensitization delay'] = build_ttest_character(df['th_delay'].values)
+    res['threshold sensitization magnitude'] = build_ttest_character(df['th_magnitude'].values)
+    res['super threshold sensitization rate'] = build_chi_character(df['sth'].values)
+    res['super threshold sensitization duration'] =build_ttest_character(df['sth_duration'].values)
+    res['super threshold sensitization delay'] =build_ttest_character(df['sth_delay'].values)
+    res['super threshold sensitization magnitude'] =build_ttest_character(df['sth_magnitude'].values)
+    res['activation AUC'] = build_ttest_character(df['area_activated'].values)
+    res['threshold sensitization AUC'] = build_ttest_character(df['th_area_activated'].values)
+    res['super threshold sensitization AUC'] = build_ttest_character(df['sth_area_activated'].values)
+
+    tmp = [['N', 'Y'][(((x=='Y') + (y=='Y')) > 0)*1] for (x,y) in zip(df['th'].values, df['sth'].values) if x in ['Y', 'N'] and y in ['Y', 'N']]
+    res['sensitization rate of any force'] = build_chi_character(np.array(tmp))
+
+    tmp = [['N', 'Y'][(x=='Y') * (y=='Y')] for (x,y) in zip(df['th'].values, df['sth'].values) if x in ['Y', 'N'] and y in ['Y', 'N']]
+    res['sensitization rate of both force'] = build_chi_character(np.array(tmp))
+
+    tmp = [(x=='Y') + (y=='Y') for (x,y) in zip(df['th'].values, df['sth'].values) if x in ['Y', 'N'] and y in ['Y', 'N']]
+    res['sensitization score'] = build_ttest_character(np.array(tmp))
+
+    tmp = [x for x in df['th'].values if x in ['Y', 'N']] + [x for x in df['sth'].values if x in ['Y', 'N']]
+    res['sensitization rate of each force'] = build_chi_character(np.array(tmp))
     return(res)
     
 # ========================================================================================================================================
