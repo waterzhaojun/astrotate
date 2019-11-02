@@ -201,3 +201,31 @@ def ax_3dscatter(ax, result_arrays, title, group_titles):
 
 def ax_hist2d(ax, result_arrays, title, group_titles):
     pass
+
+def ax_polarbar(ax, result_arrays, title, group_title):
+    arr = [x['percentage'] for x in result_arrays]
+    N = len(arr)
+
+    # width of each bin on the plot
+    width = (2*np.pi) / N
+
+    ax.bar([0, width, 2*width, 3*width], math.ceil(max(arr)/0.1)*0.1, width=width, alpha = 0.1)
+    ax.bar([0, width, 2*width, 3*width], arr, width=0.8*width, alpha = 0.6, edgecolor = 'grey')
+
+    # set the lable go clockwise and start from the top
+    ax.set_theta_zero_location("N")
+    # clockwise
+    #ax.set_theta_direction(-1)
+
+    # set the label
+    #ticks = ['0:00', '3:00', '6:00', '9:00', '12:00', '15:00', '18:00', '21:00']
+    xlocation = [0, width, 2*width, 3*width]#np.arange(N)*width
+    ax.set_xticks([0, width, 2*width, 3*width])
+    ax.set_xticklabels(group_title)
+    ax.set_ylim = [0,math.ceil(max(arr)/0.1)*0.1]
+    ax.set_yticks(np.linspace(0,1,N+1)[0:-1])
+    ax.set_yticklabels([])
+    for i in range(N):
+        ax.text(xlocation[i], max(arr[i]/2, 0.3), "{:.1%}".format(arr[i]), 
+                horizontalalignment='center',
+                verticalalignment='center')
