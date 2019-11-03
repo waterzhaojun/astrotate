@@ -1,8 +1,8 @@
 import psycopg2
 import json
 
-def get_config(path = 'config.json'):
-    with open(path, 'r') as f:
+def get_config():
+    with open('config.json', 'r') as f:
         config = json.load(f)
     return(config)
 
