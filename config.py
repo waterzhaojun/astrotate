@@ -14,6 +14,7 @@ import types
 from pathlib import Path
 import os
 from astrotate import utils
+import json
 
 def get_config(path = 'config.json'):
     with open(path, 'r') as f:
