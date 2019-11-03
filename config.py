@@ -15,6 +15,21 @@ from pathlib import Path
 import os
 from astrotate import utils
 
+def get_config(path = 'config.json'):
+    with open(path, 'r') as f:
+        config = json.load(f)
+    return(config)
+
+def connect_server(configpath, servername = 'elephantsql'):
+    config = get_config(configpath)[servername]
+    
+    if config['password'] is None:
+        config['password'] = input('Input password: ')
+    
+    conncommend = "host={} dbname={} user={} password={} port={}".format(config['server'], config['database'], config['user'], config['password'], config['port'])
+    conn = psycopg2.connect(conncommend)
+    return(conn)
+
 # ========================================================================================================================================
 # ========================================================================================================================================
 # Each database has a config yml file. It contains some fundamental setting like the root path, where is each type of experiment stored,
