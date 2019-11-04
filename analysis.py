@@ -106,6 +106,8 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3):
             ax_barplot(ax, dictarray, key, group_titles)
         elif 'scatter' in analysis:
             ax_scatter(ax, dictarray, key, group_titles)
+        elif 'polarbar' in analysis:
+            ax_polarbar(ax, dictarray, key, group_titles)
     #fig.tight_layout()
     fig.subplots_adjust(hspace = 0.5, wspace = 0.7)
     plt.show()
