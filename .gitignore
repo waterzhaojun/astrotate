@@ -5,3 +5,5 @@ __pycache__/
 test.py
 transgenic/config.json
 .vscode/
+lib/
+config.yml

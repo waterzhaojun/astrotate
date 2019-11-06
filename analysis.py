@@ -73,6 +73,9 @@ def identify_value_type(array):
     else:
         return('value')
 
+def analysis_singleKey_between_groups(result_array, key, anaFun):
+    pass
+
 def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3):
     """
     When we analyse a group of data, we will get a dict containing series
