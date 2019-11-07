@@ -11,6 +11,7 @@ import numpy as np
 import os
 from datetime import datetime
 from astrotate import utils, server
+import json
 
 class Animal():
     def __init__(self, animalid):
@@ -90,13 +91,40 @@ class Animal():
         cur = conn.cursor()
         cur.execute(
         """
-        SELECT {} FROM surg_info 
+        UPDATE surg_info 
+        SET species='{}', strain='{}', gender='{}', transgenic_id='{}', birthday='{}', ear_punch='{}', terminated='{}', note='{}'
         WHERE id = '{}';
-        """.format(', '.join(self.__keys__), animalid)
+        """.format(self.species, self.strain, self.gender, self.transgenic_id, self.birthday, self.ear_punch, self.terminated, self.note, self.id)
         )
-        animal = cur.fetchall()
         conn.commit()
+        conn.close()
 
+    def terminate(self):
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+        """
+        UPDATE surg_info 
+        SET terminated=true
+        WHERE id = '{}';
+        """.format(self.id)
+        )
+        conn.commit()
+        conn.close()
+
+    def add_treatment(self, treatment):
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO surg_treatment
+            (id, date, time, method, operator, note, parameters)
+            VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')
+            """.format(self.id, treatment.date, treatment.time, treatment.method, treatment.operator, treatment.note, json.dumps(treatment.parameters))
+        )
+        conn.commit()
+        conn.close()
+        
 
 
 def init_animal(config):

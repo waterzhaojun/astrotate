@@ -8,30 +8,7 @@ from datetime import datetime
 import inspect
 from astrotate import utils, config
 
-aav_list = [
-    'AAV5.CAG.GCaMP6s.WPRE.SV40',
-    'AAV1.CAG.GCaMP6s.WPRE',
-    'AAV5.GfaABC1D.cyto.GCaMP6f.SV40',
-    'AAV-PHP.S CA6.6PP',
-    'AAV2/5.GFAP.hM3D(Gq).mCherry',
-    'AAV5.GFAP.hM3D(Gq).mCherry',
-    'pGP.AAV.syn.JGCaMP7s.WPRE'
-]
 
-inject_method_list = [
-    'superficial cortical injection', 
-    'TG injection from contra lateral cortex', 
-    'TG injection from ipsi lateral cortex', 
-    'TG injection from nasal',
-    'retro orbital injection', 
-    'apply topically'
-]
-
-inject_tool_list = [
-    'glass pipette', 
-    'needle', 
-    'insolin syringe'
-]
 
 primary_antibody_list = ['rabbit anti c-Fos']
 secondary_antibody_list = ['goat anti rabbit']
@@ -44,43 +21,6 @@ secondary_antibody_list = ['goat anti rabbit']
 
 # aavinject is to create a dictionary 
 
-
-def aavinject(cg, *args, **kwargs):
-
-    treatment = {'method': 'virus inject'}
-    treatment['operator'] = utils.select('Choose the operator: ', cg.operator)
-    treatment['virus_id'] = utils.select('Choose virus: ', aav_list)
-    treatment['inject_method'] = utils.select('Choose inject method: ', inject_method_list)
-    treatment['inject_dose'] = input('Input dose (ul). It is the total amount: ')+'ul'
-    
-    treatment['inject_spots'] = input('Input spot number. Press ENTER for default 1. Intput an integer: ')
-    if treatment['inject_spots'] == '':
-        treatment['inject_spots'] = 1
-    else:
-        treatment['inject_spots'] = int(treatment['inject_spots'])
-
-    treatment['depth_num_of_each_spot'] = input('inject depth of each spot. Press ENTER for default 1. Input an integer: ')
-    if treatment['depth_num_of_each_spot'] == '':
-        treatment['depth_num_of_each_spot'] = 1
-    else:
-        treatment['depth_num_of_each_spot'] = int(treatment['depth_num_of_each_spot'])
-    
-    treatment['inject_tool'] = utils.select('Choose inject tool: ', inject_tool_list, **kwargs)
-
-    # date ===============================
-    utils.input_date(treatment, 'inject_date', 'Inject date', allow_none = False)
-
-    # speed ===============================
-    treatment['inject_speed'] = input('Inject speed (ul/min): ') + 'ul/min'
-
-    # depth ===============================
-    tmp = input('Inject depth (mm): ')
-    if tmp != '':
-        treatment['inject_depth'] = tmp + 'mm'
-    
-    treatment['result'] = input('Result: ')
-
-    return(treatment)
 
 def csd():
     treat = {'method': 'CSD'}
@@ -232,25 +172,87 @@ def input_date(title, allow_none = True):
 #========================================================
 
 class Treatment():
-    def __init__(self, method, title):
+    def __init__(self, method, title = None, cgpath = 'config.yml'):
+        cg = config.Config(cgpath)
         self.method = method
-        self.__title__ = title
+
+        if title == None:
+            self.__title__ = method
+        else:
+            self.__title__ = title
+
         self.time = input_time(self.__title__)
         self.date = input_date(self.__title__)
-    def to_dict(self):
-        props = [x for x in dir(self) if (not callable(x)) and x[0:2] != '__']
+        self.operator = utils.select('Treatment operator: ', cg.operator)
+        self.parameters = {}
+        self.note = input('input your note: ')
+
+    def properties(self):
+        props = [x for x in self.__dir__ if (not callable(x)) and x[0:2] != '__']
         return(props)
+
+    def show(self):
+        pass
+
 
 class CSD(Treatment):
     def __init__(self):
         csd_method_list = ['pinprick', 'KCl']
-        super().__init__('CSD', 'CSD')
+        super().__init__('CSD')
         self.apply_method = utils.select('Choose CSD method: ', csd_method_list)
  
 class Baseline(Treatment):
     def __init__(self):
-        super().__init__('baseline', 'baseline')
+        super().__init__('baseline')
 
 class Purfusion(Treatment):
     def __init__(self):
-        super().__init('PFA purfusion', 'PFA purfusion')
+        super().__init('PFA purfusion')
+
+class Aavinject(Treatment):
+    __aav_list__ = [
+        'AAV5.CAG.GCaMP6s.WPRE.SV40', 
+        'AAV1.CAG.GCaMP6s.WPRE',
+        'AAV5.GfaABC1D.cyto.GCaMP6f.SV40',
+        'AAV-PHP.S CA6.6PP',
+        'AAV2/5.GFAP.hM3D(Gq).mCherry (do not use this one)',
+        'AAV5.GFAP.hM3D(Gq).mCherry',
+        'pGP.AAV.syn.JGCaMP7s.WPRE'
+    ]
+
+    __inject_method_list__ = [
+        'superficial cortical injection', 
+        'TG injection from contra lateral cortex', 
+        'TG injection from ipsi lateral cortex', 
+        'TG injection from nasal',
+        'retro orbital injection', 
+        'apply topically'
+    ]
+
+    __inject_tool_list__ = [
+        'glass pipette', 
+        'needle', 
+        'insolin syringe'
+    ]
+    def __init__(self):
+        super().__init__('virus inject')
+        self.parameters['virus_id'] = utils.select('Choose virus: ', self.__aav_list__)
+        self.parameters['inject_method'] = utils.select('Choose inject method: ', self.__inject_method_list__)
+        self.parameters['inject_dose'] = input('Input dose (ul). It is the total amount: ')+'ul'
+        
+        tmp = input('Input spot number. Press ENTER for default 1. Intput an integer: ')
+        if tmp == '':
+            self.parameters['inject_spots'] = 1
+        else:
+            self.parameters['inject_spots'] = int(tmp)
+        
+        tmp = input('inject depth of each spot. Press ENTER for default 1. Input an integer: ')
+        if tmp == '':
+            self.parameters['depth_num_of_each_spot'] = 1
+        else:
+            self.parameters['depth_num_of_each_spot'] = int(tmp)
+        
+        self.parameters['inject_tool'] = utils.select('Choose inject tool: ', self.__inject_tool_list__)
+        self.parameters['inject_speed'] = input('Inject speed (ul/min): ') + 'ul/min'
+        self.parameters['inject_depth'] = input('Inject depth (mm): ') + 'mm'
+        self.parameters['result'] = input('Result: ')

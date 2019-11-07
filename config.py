@@ -16,6 +16,7 @@ import os
 from astrotate import utils
 import psycopg2
 import json
+import sys
 
 def get_config(path = 'config.json'):
     with open(path, 'r') as f:
@@ -40,6 +41,8 @@ def connect_server(configpath, servername = 'elephantsql'):
 # ========================================================================================================================================  
 class Config:
     def __init__(self, path):
+        if path == 'config.yml':
+            path = os.path.join(os.path.dirname(__file__), 'lib', path)
         tmp = load_config(path)
         self.sourcepath = path
         for key, value in tmp.items():
