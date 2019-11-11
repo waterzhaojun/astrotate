@@ -8,7 +8,7 @@ import os
 
 import pandas as pd
 import numpy as np
-from astrotate import array, utils, treatment, config as cg, analysis
+from astrotate import array, utils, treatment, config, analysis, server
 import json
 from datetime import datetime
 
@@ -201,7 +201,7 @@ def singleneuron_analysis(df):
 # animal treatment, and the experiment data 
 # ========================================================================================================================================
 # ========================================================================================================================================        
-class Exp(cg.Experiment):
+class Exp(config.Experiment):
     """
     The reason to structure the 2P data based on animal, date, but not run is because each animal
     will only expect receive 1 treatment. Even has multiple treatment, the previous treatment will
@@ -209,57 +209,84 @@ class Exp(cg.Experiment):
     understand to give a total treatment list, and add all runs in one info.json, for each run, just need to 
     give a situation value to label it.
     """
-    def __init__(self, config):
-        super().__init__(config, 'electrophysiology')
-        self.keys = ['animal', 'project', 'treatment']
-        self.__date__()
-        self.__setup_animal__()
-        self.infopath = self.__setinfopath__(config)
-        self.loadExp()
+    def __init__(self, animalid, cgobj):
+        self.__keys__ = ['animalid', 'animalinfo', 'date', 'project', 'treatment', 'note']
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+        """
+        SELECT {} FROM ep_info
+        WHERE animalid = '{}';
+        """.format(', '.join(self.__keys__), animalid)
+        )
+        animal = cur.fetchall()
+        conn.commit()
 
-    def __setinfopath__(self, config):
-        path = os.path.join(self.animalfolder, 'info.json')
-        if not os.path.exists(path):
-            exp = {}
-            exp['animal'] = self.animal
-            exp['project'] = utils.projectArrayInput(config)
-            exp['treatment'] = {}
-            utils.writejson(path, exp)
-        return(path)
+        if len(animal) == 0: # need to build new animal info
+            self.animalid = animalid
+            self.animalinfo = {}
+            self.animalinfo['species'] = utils.select('Choose animal strain: ', ['rat', 'mouse'])
+            if self.animalinfo['species'] == 'rat':
+                self.animalinfo['strain'] = 'SD'
+            elif self.animalinfo['species'] == 'mouse':
+                self.animalinfo['strain'] = utils.select('What is the strain: ', ['C57'])
 
-    def __date__(self):
-        tmp = input('Exp date. Press ENTER for today. Otherwise, input mm/dd/yyyy: ')
-        self.date = utils.format_date(tmp)
+            self.animalinfo['transgenic_id'] = input('transgenic db id. Press ENTER to ignore: ')
+            if self.animalinfo['transgenic_id'] != '':
+                cur = conn.cursor()
+                cur.execute(
+                """
+                SELECT dob,gender FROM transgenic_animal_log
+                WHERE animalid = '{}';
+                """.format(self.transgenic_id)
+                )
+                dob = cur.fetchall()
+                conn.commit()
+                self.animalinfo['birthday'] = dob[0][0]
+                self.animalinfo['gender'] = dob[0][1]
+            else:
+                tmp = input('Animal birthday (format month-day-year). Press ENTER to ignore: ')
+                if tmp != '':
+                    self.animalinfo['birthday'] = utils.format_date(tmp)
+                else:
+                    self.animalinfo['birthday'] = None
+                self.animalinfo['gender'] = utils.select('Choose animal gender: ', ['M', 'F'], defaultChoose = 0)
 
-    def __setup_animal__(self):
-        animaldict = {}
-        datefolder = os.path.join(self.catagoryroot, datetime.strptime(self.date, '%m-%d-%Y').strftime('%y%m%d'))
-        if not os.path.exists(datefolder):
-            os.mkdir(datefolder)
-        folders = os.listdir(datefolder)
-        folders = [x for x in folders if '.' not in x]
-        nanimal = len(folders)
-        self.animalfolder = os.path.join(datefolder, 'animal_'+str(nanimal+1))
-        if not os.path.exists(self.animalfolder):
-            os.mkdir(self.animalfolder)
-        animaldict['id'] = input('Input Animal id. Press ENTER for generate id by date: ')
-        if animaldict['id'] == '':
-            animaldict['id'] = datetime.strptime(self.date, '%m-%d-%Y').strftime('%Y%m%d') + '%02d' % (nanimal+1)
-        animaldict['gender'] = utils.select('Animal gender: ', ['M', 'F'])
-        animaldict['weight'] = int(input('Animal weight. unit is g. input an int: '))
-        
-        animaldict['brain_bloom'] = utils.select('Brain bloom? : ', ['N', 'Y'])
-        animaldict['sub_bleeding'] = utils.select('Sub bleeding? : ', ['N', 'Y'])
-        animaldict['ever_search_neuron'] = utils.select('Ever search neuron? : ', ['N', 'Y'])
-        animaldict['give_oxygen'] = utils.select('Give oxygen? : ', ['N', 'Y'])
-        
-        animaldict['strain'] = utils.select('Strain : ', ['SD', 'C57'])
-        if animaldict['strain'] in ['SD']:
-            animaldict['species'] = 'rat'
-        elif animaldict['strain'] in ['C57']:
-            animaldict['species'] = 'mouse'
-        
-        self.animal = animaldict
+            self.animalinfo['weight'] = int(input('Animal weight. unit is g. input an int: '))
+            
+            self.animalinfo['brain_bloom'] = utils.select('Brain bloom? : ', ['N', 'Y'], defaultChoose = 0)
+            self.animalinfo['sub_bleeding'] = utils.select('Sub bleeding? : ', ['N', 'Y'], defaultChoose = 0)
+            self.animalinfo['ever_search_neuron'] = utils.select('Ever search neuron? : ', ['N', 'Y'], defaultChoose = 0)
+            self.animalinfo['give_oxygen'] = utils.select('Give oxygen? : ', ['N', 'Y'], defaultChoose = 1)
+            
+            self.date = utils.format_date(input('Exp date. Press ENTER for today. Otherwise, input mm/dd/yyyy: '))
+
+            self.project = utils.projectArrayInput(cgobj)
+
+            tmp = input('Any note?')
+            if tmp != '':
+                self.note = tmp
+            else:
+                self.note = None
+
+            # add the new animal in database
+            cur = conn.cursor()
+            cur.execute(
+            """
+            INSERT INTO ep_info
+            (animalid, animalinfo, date, project, note) 
+            VALUES (%s, %s, %s, %s, %s)
+            """, (self.animalid, json.dumps(self.animalinfo), self.date, self.project, self.note)
+            )
+            conn.commit()
+            
+
+        elif len(animal) == 1: # load animal info
+            for i in range(len(self.__keys__)):
+                setattr(self, self.__keys__[i], animal[0][i])
+
+        conn.close()
+
     
 
     def add_data(self, dataObj):

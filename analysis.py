@@ -128,30 +128,7 @@ def analysis_between_groups_description(result_array, group_titles):
     
     keys = list(result_array[0].keys())
     for k in keys:
-
-    n_rows = math.ceil(len(keys)/n_fig_of_each_row)
-    plt.rcParams["figure.figsize"] = [6 * n_fig_of_each_row, 6 * n_rows] 
-    #plt.subplots_adjust(wspace = 1)
-    #fig, axs = plt.subplots(n_rows, n_fig_of_each_row)
-    fig = plt.figure()
-    
-    for i in range(len(keys)):
-        axrow = int(i / n_fig_of_each_row)
-        axcol = i % n_fig_of_each_row
-        
-        ax = fig.add_subplot(n_rows, n_fig_of_each_row, i+1)
-        key = keys[i]
-        dictarray = [x[key] for x in result_array]
-        analysis = __intersection__([x[key]['analysis_method'] for x in result_array])
-        if 'box' in analysis:
-            ax_barplot(ax, dictarray, key, group_titles)
-        elif 'scatter' in analysis:
-            ax_scatter(ax, dictarray, key, group_titles)
-        elif 'polarbar' in analysis:
-            ax_polarbar(ax, dictarray, key, group_titles)
-    #fig.tight_layout()
-    fig.subplots_adjust(hspace = 0.5, wspace = 0.7)
-    plt.show()
+        pass
 
 #============================================================================================================
 # plot methods ==============================================================================================

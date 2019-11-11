@@ -1,5 +1,6 @@
 import psycopg2
 import json
+from .. import server
 
 def get_config():
     with open('config.json', 'r') as f:
@@ -27,3 +28,6 @@ def cageid2mateid(cageid):
     records = cur.fetchall()
     conn.commit()
     print(records)
+
+
+    

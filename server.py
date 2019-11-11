@@ -17,3 +17,22 @@ def connect_server(servername = 'elephantsql'):
     conncommend = "host={} dbname={} user={} password={} port={}".format(config['server'], config['database'], config['user'], config['password'], config['port'])
     conn = psycopg2.connect(conncommend)
     return(conn)
+
+
+def get_info_by_animalid(transgenic_id, con):
+    conn = connect_server()
+    cur = conn.cursor()
+    cur.execute(
+    """
+    SELECT * FROM transgenic_animal_log
+    WHERE animalid = '{}';
+    """.format(transgenic_id)
+    )
+    record = cur.fetchall()
+    conn.commit()
+    conn.close()
+    if len(record) > 0:
+        record = record[0]
+    else:
+        record = None
+    return(record)

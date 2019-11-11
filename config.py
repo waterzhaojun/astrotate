@@ -40,7 +40,7 @@ def connect_server(configpath, servername = 'elephantsql'):
 # ========================================================================================================================================
 # ========================================================================================================================================  
 class Config:
-    def __init__(self, path):
+    def __init__(self, path = 'config.yml'):
         if path == 'config.yml':
             path = os.path.join(os.path.dirname(__file__), 'lib', path)
         tmp = load_config(path)

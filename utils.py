@@ -50,19 +50,29 @@ def format_date(string, outputformat = '%m-%d-%Y'):
     strdate = datetime.strptime(string, dateformat).strftime(outputformat)
     return(strdate)
 
-def select(hellowords, array, **kwargs):
+def select(hellowords, array, defaultChoose = None, **kwargs):
     # This function helps you use input function to select a key value from an array.
     # It list the elements and use choose the element by idx. Based on the idx, the 
     # function return the value. if you want to add some extra words, use extra_note = 'xxx'.
-    print(hellowords)
+    if (defaultChoose != None) and defaultChoose < len(array):
+        hellowords = hellowords + ' Press Enter for %s' % array[defaultChoose]
+    print(hellowords = ': ')
     for i in range(len(array)):
         print('%d ---> %s' % (i, array[i]))
     x = input('Select by idx: ')
-    final = array[int(x)]
+    if x == '':
+        if defaultChoose != None:
+            final = array[defaultChoose]
+        else:
+            pass
+    else:
+        final = array[int(x)]
+
     try:
         final = final + ' (' + kwargs['extra_note'] + ')'
     except:
         pass
+    
     return(final)
 
 def select_from_dict(hellowords, dict, **kwargs):
@@ -147,5 +157,4 @@ def confirm_array_input(val):
         return([val])
     else:
         return(val)
-
 
