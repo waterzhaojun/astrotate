@@ -1,6 +1,5 @@
 import psycopg2
 import json
-from .. import server
 
 def get_config():
     with open('config.json', 'r') as f:
