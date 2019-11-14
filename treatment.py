@@ -207,7 +207,7 @@ class Baseline(Treatment):
 
 class Purfusion(Treatment):
     def __init__(self):
-        super().__init('PFA purfusion')
+        super().__init__('PFA purfusion')
 
 class Aavinject(Treatment):
     __aav_list__ = [
