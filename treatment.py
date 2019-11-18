@@ -80,15 +80,6 @@ def drug(config):
 
     return(treat)
 
-def setupWindow():
-    treat = {'method': 'window setup'}
-    treat['window_type'] = utils.select('Choose window type: ', ['glass', 'thin bone'])
-    if treat['window_type'] == 'glass':
-        treat['layers'] = utils.select('glass layers: ', ['5-3-3-3', '5-3-3'])
-        treat['with_agar']  =utils.select('Put agar under?: ', ['Y', 'N'])
-        treat['remove_dura'] = utils.select('Removed dura?: ', ['Y', 'N'])
-    utils.input_date(treat, 'date', 'Setup date', allow_none = False)
-    return(treat)
 
 
 def optoStimulation():
@@ -256,3 +247,14 @@ class Aavinject(Treatment):
         self.parameters['inject_speed'] = input('Inject speed (ul/min): ') + 'ul/min'
         self.parameters['inject_depth'] = input('Inject depth (mm): ') + 'mm'
         self.parameters['result'] = input('Result: ')
+
+
+class Setupwindow(Treatment):
+
+    def __init__(self):
+        # csd_method_list = ['pinprick', 'KCl']
+        super().__init__('window setup')
+        self.window_type = utils.select('Choose window type: ', ['glass', 'thin bone'])
+        self.layers = utils.select('glass layers: ', ['5-3-3-3', '5-3-3'], defaultChoose = 0)
+        self.with_agar = utils.select('Put agar under?: ', ['Y', 'N'], defaultChoose = 1)
+        self.remove_dura = utils.select('Removed dura?: ', ['Y', 'N'], defaultChoose = 1)

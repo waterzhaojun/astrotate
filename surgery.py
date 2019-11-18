@@ -9,6 +9,7 @@ Steps:
 
 from datetime import datetime
 from astrotate import utils, server
+import json
 
 class Animal():
     def __init__(self, animalid):
