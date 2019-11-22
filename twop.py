@@ -122,28 +122,20 @@ def situation_data_path(infolist, situation, time = None, analysis_method = 'AQu
 # test, the setting of scanbox.
 # =======================================================================================================================================================
 # =======================================================================================================================================================
-class Data:
-    """
-    each data should have run label.
-
-    """
-    def __init__(self, exp, run):
-        self.data_type = utils.select('Data type: ', ['astrocyte_event', 'GCaMP_afferent', 'bloodvessel_dilation'])
+class Runpara:
+    def __init__(self, animalid, date,run):
         self.rawfolder = self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
-        self.channel = utils.select('Data from channel: ', ['pmt0', 'pmt1'])
         self.coordinates = self.input_coords()
         self.depth = int(input('Depth to the surface. Value is based on knobby. The surface refers to the area at the edge of changing from light to dark.'))
         self.objective_lens = self.select_objective()
         self.input_scanbox()
         self.input_situation(exp)
 
-        if self.data_type == 'astrocyte_event':
-            self.analysis_method = utils.select('Choose analysis method: ', ['AQuA'])
-
-        self.__analysis_result_path__(exp)
-
-    def __date_format__(self, datestr):
-        return(datetime.strptime(datestr, '%m-%d-%Y').strftime('%y%m%d'))
+    def input_coords(self):
+        ref = utils.select('Please choose the ref direction: ', ['N', 'S', 'E', 'W'])
+        coords = input('Please input the coordinates value (x,y), seperated by ",": ').replace(' ', '').split(',')
+        coords = [int(x) for x in coords]
+        return({'coords': coords, 'ref': ref})
 
     def select_objective(self):
         oblist = list(objective.keys())
@@ -160,11 +152,7 @@ class Data:
 
         return({'brand': ob, 'mag': mag})
 
-    def input_coords(self):
-        ref = utils.select('Please choose the ref direction: ', ['N', 'S', 'E', 'W'])
-        coords = input('Please input the coordinates value (x,y), seperated by ",": ').replace(' ', '').split(',')
-        coords = [int(x) for x in coords]
-        return({'coords': coords, 'ref': ref})
+    
 
     def input_scanbox(self):
         self.laser_power = int(input('Laser power (just int part, no %): '))
@@ -197,6 +185,23 @@ class Data:
         self.situation = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
         self.time_after_treatment = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
 
+
+class Data:
+    def __init__(self, exp, run):
+        self.data_type = utils.select('Data type: ', ['astrocyte_event', 'GCaMP_afferent', 'bloodvessel_dilation'])
+        self.rawfolder = self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
+        self.channel = utils.select('Data from channel: ', ['pmt0', 'pmt1'])
+        
+
+        if self.data_type == 'astrocyte_event':
+            self.analysis_method = utils.select('Choose analysis method: ', ['AQuA'])
+
+        self.__analysis_result_path__(exp)
+
+    def __date_format__(self, datestr):
+        return(datetime.strptime(datestr, '%m-%d-%Y').strftime('%y%m%d'))
+
+    
     def __analysis_result_path__(self, exp):
         # the analysis result file is suppose to save at the same folder with info.json
         # It will be convienent to be able to upload to google cloud, but right now this 
