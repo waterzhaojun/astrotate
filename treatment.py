@@ -7,6 +7,7 @@ So far I set them by different function but finally I may need to put them all i
 from datetime import datetime
 import inspect
 from astrotate import utils, config
+import copy
 
 
 
@@ -20,65 +21,6 @@ secondary_antibody_list = ['goat anti rabbit']
 # ================================================================================================================================
 
 # aavinject is to create a dictionary 
-
-
-def csd():
-    treat = {'method': 'CSD'}
-    csd_method_list = ['pinprick', 'KCl']
-
-    utils.input_time(treat, 'time', 'CSD time', allow_none = False)
-    
-    treat['apply_method'] = utils.select('Choose CSD method: ', csd_method_list)
-
-    return(treat)
-        
-def baseline():
-    return({"method": "baseline"})
-    
-def drug(config):
-    treat = {'method': 'drug apply'}
-
-    apply_method = ['ip', 'topic', 'subcutaneous', 'iv', 'cortex', 'ic', 'icv']
-    # config = utils.load_config()
-    treat['activate_drug'] = utils.select('Choose treated drug: ', config.drug_list)
-
-    tmp = input('Drug concentration (If you input a number, unit is mM, If you input like 1mg/cc, it will store what you input): ')
-    try:
-        tmp2 = float(tmp)
-        treat['concentration'] = tmp + 'mM'
-    except:
-        treat['concentration'] = tmp
-        
-    tmp = input('Drug soluted in. Press ENTER for default SIF and ignore this input. Input string for specific solution. ')
-    if tmp != '':
-        treat['activate_drug_solution'] = tmp
-
-    treat['apply_method'] = utils.select('Choose drug apply method: ', apply_method)
-    treat['duration'] = input('How long it treated (unit is min, input int): ')+'min'
-
-    if treat['apply_method'] == 'topic': # set parameters for topic treatment
-        tmp = input('How long it recover after wash the drug (unit is min, input int, Press ENTER for 0): ')
-        if tmp == '':
-            tmp = '0'
-        treat['recovery'] = tmp+'min'
-        tmp = input('Wash solution. Press ENTER to consider it as normal SIF wash and ignore this input. Input 0 for same solution as activate drug solution. ')
-        if tmp == '':
-            pass
-        elif tmp == '0':
-            treat['wash_method'] = treat['activate_drug_solution']
-        else:
-            treat['wash_method'] = tmp
-
-    if treat['apply_method'] == 'iv': # set parameters for iv treatment
-        treat['apply_speed'] = input('iv drug injection speed (unit is ml/min, input number): ') + 'ml/min'
-    
-    if treat['apply_method'] in ['iv', 'ip']:
-        treat['dose'] = input('inject dose (unit is cc. just input number)') + 'ml'
-
-    utils.input_time(treat, 'apply_time', 'Treatment start time', allow_none = False)
-    utils.input_date(treat, 'date', 'Treat date', allow_none = False)
-
-    return(treat)
 
 
 
@@ -159,6 +101,18 @@ def input_date(title, allow_none = True):
     else:
         value = utils.format_date(datetime.now().strftime('%m-%d-%Y'))
     return(value)
+
+def create_treatment_with_timepoint():
+    flag = True
+    i = 0
+    treatment = {}
+    treat_list = ['Baseline', 'CSD', 'Drug']
+    while flag:
+        treat_type = utils.select('Choose the treatment type you want to enter: ', treat_list)
+        treatment[str(i)] = eval(treat_type+'()').toDict()
+        i = i+1
+        flag = utils.select('More treatment?', [True, False], 0)
+    return(treatment)
     
 #========================================================
 
@@ -174,9 +128,9 @@ class Treatment():
 
         self.time = input_time(self.__title__)
         self.date = input_date(self.__title__)
-        self.operator = utils.select('Treatment operator: ', cg.operator)
+        self.operator = utils.select('Treatment operator: ', cg.operator, 0)
         self.parameters = {}
-        self.note = input('input your note: ')
+        self.note = input('input your note for %s treatment: ' % self.method)
 
     def properties(self):
         props = [x for x in self.__dir__ if (not callable(x)) and x[0:2] != '__']
@@ -185,12 +139,17 @@ class Treatment():
     def show(self):
         pass
 
+    def toDict(self):
+        a= copy.copy(self.__dict__)
+        del a['__title__']
+        return(a)
+
 
 class CSD(Treatment):
     def __init__(self):
         csd_method_list = ['pinprick', 'KCl']
         super().__init__('CSD')
-        self.apply_method = utils.select('Choose CSD method: ', csd_method_list)
+        self.parameters['apply_method'] = utils.select('Choose CSD method: ', csd_method_list)
  
 class Baseline(Treatment):
     def __init__(self):
@@ -254,7 +213,52 @@ class Setupwindow(Treatment):
     def __init__(self):
         # csd_method_list = ['pinprick', 'KCl']
         super().__init__('window setup')
-        self.window_type = utils.select('Choose window type: ', ['glass', 'thin bone'])
-        self.layers = utils.select('glass layers: ', ['5-3-3-3', '5-3-3'], defaultChoose = 0)
-        self.with_agar = utils.select('Put agar under?: ', ['Y', 'N'], defaultChoose = 1)
-        self.remove_dura = utils.select('Removed dura?: ', ['Y', 'N'], defaultChoose = 1)
+        self.parameters['window_type'] = utils.select('Choose window type: ', ['glass', 'thin bone'])
+        self.parameters['layers'] = utils.select('glass layers: ', ['5-3-3-3', '5-3-3'], defaultChoose = 0)
+        self.parameters['with_agar']= utils.select('Put agar under?: ', ['Y', 'N'], defaultChoose = 1)
+        self.parameters['remove_dura'] = utils.select('Removed dura?: ', ['Y', 'N'], defaultChoose = 1)
+
+class Drug(Treatment):
+    
+    def __init__(self):
+        drug_list = ['ACSF', 'AL8810', 'L-NAME', 'oxamate', 'L-AA', 'GAP19', 
+                     'TTX', 'BIBN', 'HET', 'DAB', 'Napro', 'FLCT', 'PPADS', 
+                     'Ozagrel', 'Levcro', 'soup', 'A10606120', 'Prob', 'TNP-ATP', 
+                     'saline', 'CBN4', 'SNP', 'GAP26', 'SC560', 'AL8810', 'CNO', 
+                     'anti CGRP', 'Tamoxipen']
+        apply_method_list = ['ip', 'topic', 'subcutaneous', 'iv', 'cortex', 'ic', 'icv']
+        super().__init__('drug apply')
+        self.parameters['activate_drug'] = utils.select('Choose treated drug: ', drug_list)
+
+        tmp = input('Drug concentration (If you input a number, unit is mM, If you input like 1mg/cc, it will store what you input): ')
+        try:
+            tmp2 = float(tmp)
+            self.parameters['concentration'] = tmp + 'mM'
+        except:
+            self.parameters['concentration'] = tmp
+            
+        tmp = input('Drug soluted in. Press ENTER for default SIF and ignore this input. Input string for specific solution. ')
+        if tmp != '':
+            self.parameters['activate_drug_solution'] = tmp
+
+        self.parameters['apply_method'] = utils.select('Choose drug apply method: ', apply_method_list)
+        self.parameters['duration'] = input('How long it treated (unit is min, input int): ')+'min'
+
+        if self.parameters['apply_method'] == 'topic': # set parameters for topic treatment
+            tmp = input('How long it recover after wash the drug (unit is min, input int, Press ENTER for 0): ')
+            if tmp == '':
+                tmp = '0'
+            self.parameters['recovery'] = tmp+'min'
+            tmp = input('Wash solution. Press ENTER to consider it as normal SIF wash and ignore this input. Input 0 for same solution as activate drug solution. Input the specific name if it is a special wash method.')
+            if tmp == '':
+                pass
+            elif tmp == '0':
+                self.parameters['wash_method'] = self.parameters['activate_drug_solution']
+            else:
+                self.parameters['wash_method'] = tmp
+
+        if self.parameters['apply_method'] == 'iv': # set parameters for iv treatment
+            self.parameters['apply_speed'] = input('iv drug injection speed (unit is ml/min, input number): ') + 'ml/min'
+        
+        if self.parameters['apply_method'] in ['iv', 'ip']:
+            self.parameters['dose'] = input('inject dose (unit is cc. just input number)') + 'ml'

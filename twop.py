@@ -2,10 +2,10 @@ import os
 import pandas as pd
 import numpy as np
 # from . import array, utils, treatment, config as cg
-from astrotate import array, utils, treatment, config as cg, analysis
+from astrotate import array, utils, treatment, config as cg, analysis, server
 import json
 from datetime import datetime
-import h5py
+# import h5py
 from pathlib import Path
 import math
 
@@ -226,15 +226,51 @@ class Exp2P(cg.Experiment):
     understand to give a total treatment list, and add all runs in one info.json, for each run, just need to 
     give a situation value to label it.
     """
-    def __init__(self, config, animalid, dateid):
-        super().__init__(config, 'twophoton')
-        self.keys = ['project', 'treatment', 'data']
+    def __init__(self, animalid, dateid):
+
+        self.__keys__ = ['animalid', 'date', 'treatment', 'note']
         self.animalid = animalid
         self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
-        self.infopath = self.__setinfopath__(config)
-        self.loadExp()
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+        """
+        SELECT * FROM twop_info
+        WHERE animalid = %s and date = %s;
+        """, (self.animalid, self.date)
+        )
+        animal = cur.fetchall()
+        conn.commit()
 
-    def __setinfopath__(self, config):
+        if len(animal) == 0: # need to build new animal info
+            self.animalid = animalid
+            self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
+            self.treatment = treatment.create_treatment_with_timepoint()
+            tmp = input('Any note?')
+            if tmp != '':
+                self.note = tmp
+            else:
+                self.note = None
+
+            # add the new animal in database
+            cur = conn.cursor()
+            cur.execute(
+            """
+            INSERT INTO twop_info
+            (animalid, date, treatment, note) 
+            VALUES (%s, %s, %s, %s)
+            """, (self.animalid, self.date, json.dumps(self.treatment), self.note)
+            )
+            conn.commit()
+            
+
+        elif len(animal) == 1: # load animal info
+            for i in range(len(self.__keys__)):
+                setattr(self, self.__keys__[i], animal[0][i])
+
+        conn.close()
+
+    """def __setinfopath__(self, config):
         self.animalfolder = os.path.join(self.catagoryroot, self.animalid)
         # print(self.animalfolder)
         if not os.path.exists(self.animalfolder):
@@ -252,4 +288,4 @@ class Exp2P(cg.Experiment):
     def add_data(self, dataObj):
         # use this to add a new data to exp and update it to the json file in database
         self.data.append(dataObj.output())
-        self.writeExp()
+        self.writeExp()"""

@@ -91,7 +91,7 @@ class Experiment:
         self.root = config.system_path['root']
         self.catagoryroot = os.path.join(config.system_path['root'], config.system_path[catagory])
         self.infopath = None
-        self.keys = ['animal', 'project', 'treatment', 'data']
+        self.keys = ['animal', 'treatment', 'data']
 
     def __setinfopath__(self):
         pass
