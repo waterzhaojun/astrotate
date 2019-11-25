@@ -76,6 +76,7 @@ def aquaStruct(foldername):
 # ===================================================================
 # query part 
 def get_twop_animals(cgobj):
+    # deprecated
     # This function is to return a list of animals that had two photon experiment.
     twoproot = os.path.join(cgobj.system_path['root'], cgobj.system_path['twophoton'])
     animals = os.listdir(twoproot)
@@ -85,6 +86,7 @@ def get_twop_animals(cgobj):
     return(animals, animals_path)
 
 def get_animal_twop_explist(animallist, cgobj):
+    # deprecated
     animallist = utils.confirm_array_input(animallist)
     twoproot = os.path.join(cgobj.system_path['root'], cgobj.system_path['twophoton'])
     explist = []
@@ -102,6 +104,7 @@ def situation_data_path(infolist, situation, time = None, analysis_method = 'AQu
     If you have more restrain condition, give a two element array arg as ['magnitude', 5.7].
     So far the condition only support one level query.
     """
+    # deprecated
     infolist = utils.confirm_array_input(infolist)
     datafolders = []
     for i in infolist:
@@ -116,6 +119,26 @@ def situation_data_path(infolist, situation, time = None, analysis_method = 'AQu
         data = [os.path.join(os.path.dirname(i), x['analysis_result_path']) for x in data]
         datafolders = datafolders + data
     return(datafolders)
+
+def get_data_list(datatype, analysis_method, **kwargs):
+    conn = server.connect_server()
+    cur = conn.cursor()
+    cur.execute(
+    """
+    SELECT animalid, filepath FROM twop_data
+    WHERE data_type = '{}' and analysis_method = '{}';
+    """.format(datatype, analysis_method)
+    )
+    record = cur.fetchall()
+    conn.commit()
+    conn.close()
+    
+    if 'filename_ext' in kwargs.keys():
+        record = [x for x in record if kwargs['filename_ext'] in x[-1]]
+
+    return(record)
+
+
 # =======================================================================================================================================================
 # =======================================================================================================================================================
 # Data class is an object for two photon data. It contains the information how the data was recorded, under which situation when the animal experiencing 

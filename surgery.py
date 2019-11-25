@@ -13,13 +13,13 @@ import json
 
 class Animal():
     def __init__(self, animalid):
-        self.__keys__ = ['id', 'species', 'strain', 'gender', 'transgenic_id', 'birthday', 'ear_punch', 'terminated', 'note']
+        self.__keys__ = ['animalid', 'species', 'strain', 'gender', 'transgenic_id', 'birthday', 'ear_punch', 'terminated', 'note']
         conn = server.connect_server()
         cur = conn.cursor()
         cur.execute(
         """
         SELECT {} FROM surg_info 
-        WHERE id = '{}';
+        WHERE animalid = '{}';
         """.format(', '.join(self.__keys__), animalid)
         )
         animal = cur.fetchall()
@@ -71,9 +71,9 @@ class Animal():
             cur.execute(
             """
             INSERT INTO surg_info
-            (id, species, strain, gender, transgenic_id, birthday, ear_punch, terminated, note) 
+            (animalid, species, strain, gender, transgenic_id, birthday, ear_punch, terminated, note) 
             VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')
-            """.format(self.id, self.species, self.strain, self.gender, self.transgenic_id, self.birthday, self.ear_punch, self.terminated, self.note)
+            """.format(self.animalid, self.species, self.strain, self.gender, self.transgenic_id, self.birthday, self.ear_punch, self.terminated, self.note)
             )
             conn.commit()
             
@@ -91,8 +91,8 @@ class Animal():
         """
         UPDATE surg_info 
         SET species='{}', strain='{}', gender='{}', transgenic_id='{}', birthday='{}', ear_punch='{}', terminated='{}', note='{}'
-        WHERE id = '{}';
-        """.format(self.species, self.strain, self.gender, self.transgenic_id, self.birthday, self.ear_punch, self.terminated, self.note, self.id)
+        WHERE animalid = '{}';
+        """.format(self.species, self.strain, self.gender, self.transgenic_id, self.birthday, self.ear_punch, self.terminated, self.note, self.animalid)
         )
         conn.commit()
         conn.close()
@@ -104,8 +104,8 @@ class Animal():
         """
         UPDATE surg_info 
         SET terminated=true
-        WHERE id = '{}';
-        """.format(self.id)
+        WHERE animalid = '{}';
+        """.format(self.animalid)
         )
         conn.commit()
         conn.close()
@@ -116,9 +116,9 @@ class Animal():
         cur.execute(
             """
             INSERT INTO surg_treatment
-            (id, date, time, method, operator, note, parameters)
+            (animalid, date, time, method, operator, note, parameters)
             VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')
-            """.format(self.id, treatment.date, treatment.time, treatment.method, treatment.operator, treatment.note, json.dumps(treatment.parameters))
+            """.format(self.animalid, treatment.date, treatment.time, treatment.method, treatment.operator, treatment.note, json.dumps(treatment.parameters))
         )
         conn.commit()
         conn.close()
