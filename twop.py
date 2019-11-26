@@ -1,13 +1,13 @@
 import os
 import pandas as pd
 import numpy as np
-# from . import array, utils, treatment, config as cg
 from astrotate import array, utils, treatment, config as cg, analysis, server
 import json
 from datetime import datetime
 # import h5py
 from pathlib import Path
 import math
+from scipy.io import loadmat
 
 
 objective = {'Nikon': ['16X']}
@@ -17,6 +17,37 @@ magnitude_list = [0.8, 1, 2.0, 2.4, 4.0, 4.8, 5.7]
 def folder_format(animalid, date, run):
     out = str(date) + '_' + animalid + '_run' + str(run)
     return(out)
+
+# csd analysis part =========================================================
+def readCsdData(path):
+    # csd analysis data is supposed to save in a mat file.
+    tmp = loadmat(path)
+    df = pd.DataFrame(columns = ['csd_speed', 'A1_duration', 'D1_duration',
+                                 'C_duration', 'D2_duration', 'A2_duration',
+                                 'R_duration'])
+    df.loc[0, 'csd_speed'] = tmp['speed']
+    df.loc[0, 'A1_duration'] = tmp['A1_duration']
+    df.loc[0, 'D1_duration'] = tmp['D1_duration']
+    df.loc[0, 'C_duration'] = tmp['C_duration']
+    df.loc[0, 'D2_duration'] = tmp['D2_duration']
+    df.loc[0, 'A2_duration'] = tmp['A2_duration']
+    df.loc[0, 'R_duration'] = tmp['R_duration']
+    return(df)
+
+def groupCsdData(pathlist):
+    res = {}
+    for i in range(len(pathlist)):
+        if i == 0:
+            df = readCsdData(pathlist[i])
+        else:
+            df = pd.concat([df, readCsdData(pathlist[i])])
+    for k in df.columns:
+        try:
+            res[k] = analysis.group_value_to_dict_element(df.loc[:,k].values)
+            res[k]['analysis_method'] = ['box']
+        except:
+            pass
+    return(res)     
 
 # aqua analysis part ========================================================
 def readAquaData(path):
@@ -75,51 +106,6 @@ def aquaStruct(foldername):
 
 # ===================================================================
 # query part 
-def get_twop_animals(cgobj):
-    # deprecated
-    # This function is to return a list of animals that had two photon experiment.
-    twoproot = os.path.join(cgobj.system_path['root'], cgobj.system_path['twophoton'])
-    animals = os.listdir(twoproot)
-    # animals = [os.path.join(twoproot, x) for x in animals]
-    animals = [x for x in animals if os.path.isdir(os.path.join(twoproot, x))]
-    animals_path = [os.path.join(twoproot, x) for x in animals]
-    return(animals, animals_path)
-
-def get_animal_twop_explist(animallist, cgobj):
-    # deprecated
-    animallist = utils.confirm_array_input(animallist)
-    twoproot = os.path.join(cgobj.system_path['root'], cgobj.system_path['twophoton'])
-    explist = []
-    for animal in animallist:
-        path = os.path.join(twoproot, animal)
-        dates = os.listdir(path)
-        dates = [os.path.join(path, x, 'info.json') for x in dates if os.path.isdir(os.path.join(path, x))]
-        explist = explist + dates
-    return(explist)
-
-def situation_data_path(infolist, situation, time = None, analysis_method = 'AQuA', *args):
-    """
-    When you get a list of animal info files in the group, you can use
-    this function to get a list of folder path for certain situation of this animal.
-    If you have more restrain condition, give a two element array arg as ['magnitude', 5.7].
-    So far the condition only support one level query.
-    """
-    # deprecated
-    infolist = utils.confirm_array_input(infolist)
-    datafolders = []
-    for i in infolist:
-        info = utils.readjson(i)
-        data = info['data']
-        data = [x for x in data if (x['situation'] == situation) and (x['analysis_method'] == analysis_method)]
-        if time != None:
-            data = [x for x in data if x['time_after_treatment'] == time]
-
-        for arg in args:
-            data = [x for x in data if x[arg[0]] == arg[1]]
-        data = [os.path.join(os.path.dirname(i), x['analysis_result_path']) for x in data]
-        datafolders = datafolders + data
-    return(datafolders)
-
 def get_data_list(datatype, analysis_method, **kwargs):
     conn = server.connect_server()
     cur = conn.cursor()

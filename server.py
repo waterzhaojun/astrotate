@@ -1,6 +1,7 @@
 import psycopg2
 import json
 import os
+import getpass
 
 def get_config():
     path = os.path.join(os.path.dirname(__file__), 'lib', 'server_config.json')
@@ -9,10 +10,16 @@ def get_config():
     return(config)
 
 def connect_server(servername = 'elephantsql'):
-    config = get_config()[servername]
-    
-    if config['password'] is None:
-        config['password'] = input('Input password: ')
+    try:
+        config = get_config()[servername]
+        if config['password'] is None:
+            config['password'] = input('Input password: ')
+    except:
+        config = {}
+        config['server'] = input('server: ')
+        config['database'] = input('database name: ')
+        config['user'] = input('username: ')
+        config['password'] = getpass.getpass('password: ')
     
     conncommend = "host={} dbname={} user={} password={} port={}".format(config['server'], config['database'], config['user'], config['password'], config['port'])
     conn = psycopg2.connect(conncommend)
