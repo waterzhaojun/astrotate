@@ -20,6 +20,9 @@ def connect_server(servername = 'elephantsql'):
         config['database'] = input('database name: ')
         config['user'] = input('username: ')
         config['password'] = getpass.getpass('password: ')
+        tmp = input('port (press Enter for 5432):')
+        if tmp == '':
+            config['port'] = '5432'
     
     conncommend = "host={} dbname={} user={} password={} port={}".format(config['server'], config['database'], config['user'], config['password'], config['port'])
     conn = psycopg2.connect(conncommend)
