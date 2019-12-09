@@ -26,10 +26,10 @@ def readCsdData(path):
     run = os.path.basename(path).split('_')[0]
     tmp = loadmat(resultpath)
     df = pd.DataFrame(columns = ['csd_speed', 'A1_duration', 'C_duration', 'A2_duration'])
-    df.loc[0, 'csd_speed'] = tmp['speed']
-    df.loc[0, 'A1_duration'] = tmp['A1_duration']
-    df.loc[0, 'C_duration'] = tmp['C_duration']
-    df.loc[0, 'A2_duration'] = tmp['A2_duration']
+    df.loc[0, 'csd_speed'] = tmp['speed'][0][0]
+    df.loc[0, 'A1_duration'] = tmp['A1_duration'][0][0]
+    df.loc[0, 'C_duration'] = tmp['C_duration'][0][0]
+    df.loc[0, 'A2_duration'] = tmp['A2_duration'][0][0]
 
     a1resultpath = os.path.join(path,run+'_csdA1_AQuA', 'FeatureTable.xlsx')
     a1result = readAquaData(a1resultpath)
@@ -53,33 +53,33 @@ def groupCsdData(pathlist):
             tmp = readCsdData(pathlist[i])
             df = pd.concat([df, tmp[0]])
             a1 = pd.concat([a1, tmp[1]])
-            a2 = pd.concat([a1, tmp[2]])
-            c = pd.concat([a1, tmp[3]])
+            a2 = pd.concat([a2, tmp[2]])
+            c = pd.concat([c, tmp[3]])
     for k in df.columns:
         try:
-            res[k] = analysis.group_value_to_dict_element(df.loc[:,k].values)
+            res[k] = group_value_to_dict_element(df.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
     for k in a1.columns:
         try:
-            res[k] = analysis.group_value_to_dict_element(a1.loc[:,k].values)
+            res[k] = group_value_to_dict_element(a1.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
     for k in a2.columns:
         try:
-            res[k] = analysis.group_value_to_dict_element(a2.loc[:,k].values)
+            res[k] = group_value_to_dict_element(a2.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
     for k in c.columns:
         try:
-            res[k] = analysis.group_value_to_dict_element(c.loc[:,k].values)
+            res[k] = group_value_to_dict_element(c.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
-    return(res)    
+    return(res)  
 
 # aqua analysis part ========================================================
 def readAquaData(path):

@@ -124,9 +124,39 @@ def analysis_between_groups_description(result_array, group_titles):
             lst1 = list(set(lst1) & set(tmplst))
         return(lst1)
     
+    plist, __ = paired_analysis_idx(len(result_array))
     keys = list(result_array[0].keys())
     for k in keys:
-        pass
+        for i in range(len(plist)):
+            
+            print('=============================================================')
+            print(k+'(%s (n=%d) vs %s (n=%d))'%(group_titles[plist[i][0]], len(result_array[plist[i][0]][k]['array']), 
+                                                group_titles[plist[i][1]], len(result_array[plist[i][1]][k]['array'])))
+            if len(result_array[plist[i][0]][k]['array']) > 8:
+                try:
+                    normaltest = stats.normaltest(result_array[plist[i][0]][k]['array'])
+                    print('normaltest: statistic=%.02f, pvalue=%.02f' % normaltest)
+                except:
+                    pass
+            else:
+                print('Not enough data for normal test.')
+            
+            try:
+                p = stats.mannwhitneyu(np.array(result_array[plist[i][0]][k]['array']).astype(float), 
+                                    np.array(result_array[plist[i][1]][k]['array']).astype(float))[1]
+                label = '%f\241%f vs %f\241%f (p=%f)' % (result_array[plist[i][0]][k]['mean'], result_array[plist[i][0]][k]['sterr'],
+                                                         result_array[plist[i][1]][k]['mean'], result_array[plist[i][1]][k]['sterr'],
+                                                         p)
+                if p < 0.05:
+                    label = '\x1b[31m' + label + '\x1b[0m'
+                print(label)
+            except:
+                print('Manning whitney analysis failed. May because the data is identical. ')
+                print(result_array[plist[i][0]][k]['array'])
+                print(result_array[plist[i][1]][k]['array'])
+                                    
+            
+            
 
 #============================================================================================================
 # plot methods ==============================================================================================
