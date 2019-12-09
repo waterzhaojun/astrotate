@@ -10,7 +10,7 @@ import math
 from scipy.io import loadmat
 
 
-objective = {'Nikon': ['16X']}
+objective = {'Nikon': ['X16']}
 magnitude_list = [0.8, 1, 2.0, 2.4, 4.0, 4.8, 5.7]
 
 
@@ -20,34 +20,66 @@ def folder_format(animalid, date, run):
 
 # csd analysis part =========================================================
 def readCsdData(path):
+    # The path refers to a folder named runx_CSD
     # csd analysis data is supposed to save in a mat file.
-    tmp = loadmat(path)
-    df = pd.DataFrame(columns = ['csd_speed', 'A1_duration', 'D1_duration',
-                                 'C_duration', 'D2_duration', 'A2_duration',
-                                 'R_duration'])
+    resultpath = os.path.join(path,'result.mat')
+    run = os.path.basename(path).split('_')[0]
+    tmp = loadmat(resultpath)
+    df = pd.DataFrame(columns = ['csd_speed', 'A1_duration', 'C_duration', 'A2_duration'])
     df.loc[0, 'csd_speed'] = tmp['speed']
     df.loc[0, 'A1_duration'] = tmp['A1_duration']
-    df.loc[0, 'D1_duration'] = tmp['D1_duration']
     df.loc[0, 'C_duration'] = tmp['C_duration']
-    df.loc[0, 'D2_duration'] = tmp['D2_duration']
     df.loc[0, 'A2_duration'] = tmp['A2_duration']
-    df.loc[0, 'R_duration'] = tmp['R_duration']
-    return(df)
+
+    a1resultpath = os.path.join(path,run+'_csdA1_AQuA', 'FeatureTable.xlsx')
+    a1result = readAquaData(a1resultpath)
+    a1result.columns = ['A1_'+x for x in a1result.columns]
+    
+    a2resultpath = os.path.join(path,run+'_csdA2_AQuA', 'FeatureTable.xlsx')
+    a2result = readAquaData(a2resultpath)
+    a2result.columns = ['A2_'+x for x in a2result.columns]
+    
+    cresultpath = os.path.join(path,run+'_csdC_AQuA', 'FeatureTable.xlsx')
+    cresult = readAquaData(cresultpath)
+    cresult.columns = ['C_'+x for x in cresult.columns]
+    return(df, a1result, a2result, cresult)
 
 def groupCsdData(pathlist):
     res = {}
     for i in range(len(pathlist)):
         if i == 0:
-            df = readCsdData(pathlist[i])
+            df, a1, a2, c = readCsdData(pathlist[i])
         else:
-            df = pd.concat([df, readCsdData(pathlist[i])])
+            tmp = readCsdData(pathlist[i])
+            df = pd.concat([df, tmp[0]])
+            a1 = pd.concat([a1, tmp[1]])
+            a2 = pd.concat([a1, tmp[2]])
+            c = pd.concat([a1, tmp[3]])
     for k in df.columns:
         try:
             res[k] = analysis.group_value_to_dict_element(df.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
-    return(res)     
+    for k in a1.columns:
+        try:
+            res[k] = analysis.group_value_to_dict_element(a1.loc[:,k].values)
+            res[k]['analysis_method'] = ['box']
+        except:
+            pass
+    for k in a2.columns:
+        try:
+            res[k] = analysis.group_value_to_dict_element(a2.loc[:,k].values)
+            res[k]['analysis_method'] = ['box']
+        except:
+            pass
+    for k in c.columns:
+        try:
+            res[k] = analysis.group_value_to_dict_element(c.loc[:,k].values)
+            res[k]['analysis_method'] = ['box']
+        except:
+            pass
+    return(res)    
 
 # aqua analysis part ========================================================
 def readAquaData(path):
@@ -132,13 +164,55 @@ def get_data_list(datatype, analysis_method, **kwargs):
 # =======================================================================================================================================================
 # =======================================================================================================================================================
 class Runpara:
-    def __init__(self, animalid, date,run):
-        self.rawfolder = self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
-        self.coordinates = self.input_coords()
-        self.depth = int(input('Depth to the surface. Value is based on knobby. The surface refers to the area at the edge of changing from light to dark.'))
-        self.objective_lens = self.select_objective()
-        self.input_scanbox()
-        self.input_situation(exp)
+    def __init__(self, exp, run):
+        self.folder = exp.date.strftime('%y%m%d') + '_' + exp.animalid +'_run' + str(run)
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+        """
+        SELECT * FROM twop_run_para
+        WHERE folder = '{}';
+        """.format(self.folder)
+        )
+        run = cur.fetchall()
+        conn.commit()
+
+        if len(run) == 0: # need to build new animal info
+            self.coordinates = self.input_coords()
+            self.depth = int(input('Depth to the surface. Value is based on knobby. The surface refers to the area at the edge of changing from light to dark.'))
+            self.objective_lens = self.select_objective()
+            self.input_scanbox()
+            self.input_situation(exp)
+
+            # add the new animal in database
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO twop_run_para
+                (folder, coords_ref, coords_x, coords_y, depth, objective_lens_brand, objective_lens_mag, pmt0, pmt1, scanrate, volume, magnitude, startpoint_situation, time_after_treatment) 
+                VALUES (%s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s)
+                """, 
+                (self.folder, self.coordinates['ref'], self.coordinates['coords'][0], self.coordinates['coords'][1], 
+                self.depth, self.objective_lens['brand'], self.objective_lens['mag'], 
+                self.pmt0, self.pmt1,self.scanrate,self.volume, self.magnitude,
+                self.situation, self.time_after_treatment)
+            )
+            conn.commit()
+            
+
+        elif len(run) == 1: # load run parameters
+            self.coordinates = {'ref':run[0][1], 'coords':[run[0][2], run[0][3]]}
+            self.depth = run[0][4]
+            self.objective_lens = {'brand':run[0][5], 'mag':run[0][6]}
+            self.pmt0 = run[0][7]
+            self.pmt1 = run[0][8]
+            self.scanrate = run[0][9]
+            self.volume = run[0][10]
+            self.magnitude = run[0][11]
+            self.situation = run[0][12]
+            self.time_after_treatment = run[0][13]
+
+        conn.close()
 
     def input_coords(self):
         ref = utils.select('Please choose the ref direction: ', ['N', 'S', 'E', 'W'])
@@ -177,9 +251,9 @@ class Runpara:
             
         tmp = input('opto scanning volumn number (int, Press ENTER for 1): ')
         if tmp == '':
-            self.volumn = 1
+            self.volume = 1
         else:
-            self.volumn = int(tmp)
+            self.volume = int(tmp)
             
         self.magnitude = float(utils.select('magnitude: ', magnitude_list))
         
@@ -192,39 +266,173 @@ class Runpara:
         #self.situation['treatment'] = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
         #self.situation['time_after_treatment'] = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
         self.situation = utils.select('Select the situation which this data is experiencing: ', tarr).split(':')[0]
-        self.time_after_treatment = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')+'min'
-
-
-class Data:
-    def __init__(self, exp, run):
-        self.data_type = utils.select('Data type: ', ['astrocyte_event', 'GCaMP_afferent', 'bloodvessel_dilation'])
-        self.rawfolder = self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
-        self.channel = utils.select('Data from channel: ', ['pmt0', 'pmt1'])
-        
-
-        if self.data_type == 'astrocyte_event':
-            self.analysis_method = utils.select('Choose analysis method: ', ['AQuA'])
-
-        self.__analysis_result_path__(exp)
+        self.time_after_treatment = input('How long under this situation (consider the beginning of the trial. unit is min. int): ')
 
     def __date_format__(self, datestr):
         return(datetime.strptime(datestr, '%m-%d-%Y').strftime('%y%m%d'))
 
+    def update(self):
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE twop_run_para
+            set coords_ref=%s, coords_x=%s, coords_y=%s, depth=%s, objective_lens_brand=%s, objective_lens_mag=%s, pmt0=%s, pmt1=%s, scanrate=%s, volume=%s, magnitude=%s, startpoint_situation=%s, time_after_treatment=%s
+            WHERE folder = %s
+            """, 
+            (self.coordinates['ref'], self.coordinates['coords'][0], self.coordinates['coords'][1], 
+            self.depth, self.objective_lens['brand'], self.objective_lens['mag'], 
+            self.pmt0, self.pmt1,self.scanrate,self.volume, self.magnitude,
+            self.situation, self.time_after_treatment, self.folder)
+        )
+        conn.commit()
+        conn.close()
+
+
+class Data:
+    def __init__(self, exp, data_type):
+        self.data_type = data_type #utils.select('Data type: ', ['astrocyte_event', 'GCaMP_afferent', 'bloodvessel_dilation'])
+        self.animalid = exp.animalid
+        self.datafolder = os.path.join(exp.animalid, exp.date.strftime('%y%m%d'))# self.__date_format__(exp.date) + '_' + exp.animalid +'_run' + str(run)
+        self.channel = []#utils.select('Data from channel: ', [[0], [1], [0,1]])
+        self.filepath = ''
+
+    def load_records(self):
+        # This function is to load the record from database. It only contain the path of the data, not data itself.
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT * FROM twop_data
+            WHERE animalid = %s and data_type = %s and filepath = %s
+            """, 
+            (self.animalid, self.data_type, self.filepath)
+        )
+        records = cur.fetchall()
+        conn.commit()
+        conn.close()
+
+        return(records)
     
-    def __analysis_result_path__(self, exp):
-        # the analysis result file is suppose to save at the same folder with info.json
-        # It will be convienent to be able to upload to google cloud, but right now this 
-        # function is not available.
-        # This path refer to a folder under the animal folder, in this folder there are at list one data file and at list parameter json file.
-        # The structure of this folder based on the analysis method.
-        files = os.listdir(exp.animalfolder)
-        files = [x for x in files if os.path.isdir(os.path.join(exp.animalfolder, x))]
-        self.analysis_result_path = utils.select('Choose the analysis result folder for this run: ', files)
+    def upload(self):
+        # I am still hesitating where to put it, parent or child class?
+        # Looks like I can use filepath as pk
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT * from twop_data
+            WHERE filepath = %s
+            """,
+            (self.filepath)
+        )
+        record = cur.fetchall()
+        conn.commit()
+        if len(record) > 0:
+            flag = utils.select('this filepath already exist, you want to update? ', ['Y', 'N'], 0)
+            if flag == 'Y':
+                print('Note: animalid wont change')
+                cur = conn.cursor()
+                cur.execute(
+                    """
+                    UPDATE twop_data
+                    SET rawfolder = %s, analysis_method = %s, data_type = %s, pmt = %s
+                    WHERE filepath = %s
+                    """, 
+                    (
+                        self.rawfolder, self.analysis_method, self.data_type,
+                        self.pmt, self.filepath
+                    )
+                )
+                conn.commit()
+        else:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO twop_data
+                (animalid, data_type, pmt, rawfolder, analysis_method, filepath)
+                VALUES (%s,%s,%s,%s,%s,%s,%s)
+                """, 
+                (
+                    self.animalid, self.data_type, self.pmt, self.rawfolder, 
+                    self.analysis_method, self.filepath
+                )
+            )
+            conn.commit()
+        conn.close()
+        
 
-
-    def output(self):
+    def show(self):
         ot = self.__dict__
+        for key, value in ot.items:
+            print(key, value)
         return(ot)
+
+class Data_astrocyte_csd(Data):
+    def __init__(self, exp):
+        super().__init__(exp, 'astrocyte_csd')
+        self.filepath = os.path.join(self.datafolder, 'CSD')
+        self.analysis_method = 'csd_analysis'
+
+    def load_records(self):
+        # This function is to load the record from database. 
+        # It only contain the path of the data, not data itself.
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT * FROM twop_data
+            WHERE animalid = %s and data_type = %s and filepath = %s
+            """, 
+            (self.animalid, self.data_type, self.filepath)
+        )
+        records = cur.fetchall()
+        conn.commit()
+        conn.close()
+
+        return(records)
+
+    def load_data(self, database_root):
+        # This function is to use data folder path to load the detail data.
+        path = os.path.join(database_root, '2P', self.filepath)
+        data = {}
+        # add the load data code here.
+        return(data)
+
+class Data_astrocyte_event(Data):
+    def __init__(self, exp):
+        super().__init__(exp, 'astrocyte_event')
+        self.run = int(input('run (input an int): '))
+        self.rawfolder = ['run'+str(self.run)+'_AQuA']
+        #self.filepath = os.path.join(self.datafolder, 'run'+str(self.run)+'_AQuA')
+        self.analysis_method = 'AQuA'
+
+    def load_records(self):
+        # This function is to load the record from database. 
+        # It only contain the path of the data, not data itself.
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT * FROM twop_data
+            WHERE animalid = %s and data_type = %s and %s = ANY(rawfolder)
+            """, 
+            (self.animalid, self.data_type, self.filepath)
+        )
+        records = cur.fetchall()
+        conn.commit()
+        conn.close()
+
+        return(records)
+
+    def load_data(self, database_root):
+        # This function is to use data folder path to load the detail data.
+        path = os.path.join(database_root, '2P', self.filepath)
+        data = {}
+        # add the load data code here.
+        return(data)
+    
+
 
 # ========================================================================================================================================
 # ========================================================================================================================================
@@ -283,23 +491,3 @@ class Exp2P(cg.Experiment):
                 setattr(self, self.__keys__[i], animal[0][i])
 
         conn.close()
-
-    """def __setinfopath__(self, config):
-        self.animalfolder = os.path.join(self.catagoryroot, self.animalid)
-        # print(self.animalfolder)
-        if not os.path.exists(self.animalfolder):
-            os.mkdir(self.animalfolder)
-        path = os.path.join(self.animalfolder, datetime.strptime(self.date, '%m-%d-%Y').strftime('%y%m%d')+'.json')
-        if not os.path.exists(path):
-            exp = {}
-            exp['project'] = utils.projectArrayInput(config)
-            exp['treatment'] = {}
-            exp['data'] = []
-            utils.writejson(path, exp)
-        return(path)
-
-
-    def add_data(self, dataObj):
-        # use this to add a new data to exp and update it to the json file in database
-        self.data.append(dataObj.output())
-        self.writeExp()"""

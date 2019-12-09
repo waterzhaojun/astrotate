@@ -217,6 +217,7 @@ class Setupwindow(Treatment):
         self.parameters['layers'] = utils.select('glass layers: ', ['5-3-3-3', '5-3-3'], defaultChoose = 0)
         self.parameters['with_agar']= utils.select('Put agar under?: ', ['Y', 'N'], defaultChoose = 1)
         self.parameters['remove_dura'] = utils.select('Removed dura?: ', ['Y', 'N'], defaultChoose = 1)
+        self.parameters['location'] = utils.select('location of the window: ', ['visual cortex', 'transverse sinus'])
 
 class Drug(Treatment):
     
