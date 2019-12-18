@@ -26,7 +26,7 @@ class Animal():
         conn.commit()
 
         if len(animal) == 0: # need to build new animal info
-            self.id = animalid
+            self.animalid = animalid
             
             self.species = utils.select('Choose animal strain: ', ['rat', 'mouse'])
             if self.species == 'rat':
