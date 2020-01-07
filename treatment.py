@@ -243,7 +243,9 @@ class Drug(Treatment):
             self.parameters['activate_drug_solution'] = tmp
 
         self.parameters['apply_method'] = utils.select('Choose drug apply method: ', apply_method_list)
-        self.parameters['duration'] = input('How long it treated (unit is min, input int): ')+'min'
+        tmp = input('How long it treated (unit is min, input int, Press ENTER to ignore): ')
+        if tmp != '':
+            self.parameters['duration'] = tmp + 'min'
 
         if self.parameters['apply_method'] == 'topic': # set parameters for topic treatment
             tmp = input('How long it recover after wash the drug (unit is min, input int, Press ENTER for 0): ')
