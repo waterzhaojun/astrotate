@@ -99,7 +99,7 @@ def input_date(title, allow_none = True):
         else:
             value = tmp
     else:
-        value = utils.format_date(datetime.now().strftime('%m-%d-%Y'))
+        value = utils.format_date(tmp)
     return(value)
 
 def create_treatment_with_timepoint():
