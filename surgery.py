@@ -125,3 +125,43 @@ class Animal():
         if treatment.method == 'PFA purfusion':
             self.terminate()
         
+    def mark_aavresult(self):
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT parameters, serialid, date from surg_treatment
+            WHERE animalid = '{}' and method = 'virus inject'
+            """.format(self.animalid)
+        )
+        t = cur.fetchall()
+        conn.commit()
+        
+        aavlist = [[x[0]['virus_id'] + ' (date: ' + x[2].strftime('%m-%d-%Y') + ')', x[0]['result'],x[1]] for x in t]
+        aavlistforselect = [x[0] for x in aavlist]
+
+        targetaav = utils.select('Select the AAV you want to mark the result. ', aavlistforselect, None)
+        targetid = [x[2] for x in aavlist if x[0] == targetaav]
+        if len(targetid) != 1:
+            conn.close()
+            raise Exception('please check treatment, why the selected aav length is not 1.')
+        else:
+            targetid = targetid[0]
+
+        scorelist = ['No expression', 'only several fibers', 'only several areas', 'many areas, easy to find', 'many areas and multiple layers']
+        score = utils.select('Score the %s result. Choose by idx: ' % targetaav, scorelist)
+        score = scorelist.index(score)
+
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE surg_treatment
+            SET parameters = jsonb_set(parameters, '{}', '{}', FALSE)
+            WHERE serialid = '{}'
+            """.format('{result}',score, targetid)
+            
+        )
+        conn.commit()
+        conn.close()
+
+        

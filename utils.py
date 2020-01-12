@@ -73,7 +73,7 @@ def select(hellowords, array, defaultChoose = None, **kwargs):
         final = final + ' (' + kwargs['extra_note'] + ')'
     except:
         pass
-    
+
     return(final)
 
 def select_from_dict(hellowords, dict, **kwargs):
