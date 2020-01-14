@@ -4,6 +4,9 @@ Created on Fri Aug 16 14:17:59 2019
 
 @author: jzhao1
 """
+
+# last update is 1/14/2020, I copy all function from google cloud.
+
 import os
 
 import pandas as pd
@@ -163,10 +166,141 @@ def treatmentMethod(info, method):
 # ================================================================================
 # analyse part ========================================================================
 # ================================================================================
+
+# To analyse single neuron ep data extracted from database, a good sequence is as below:
+# 1. use decode_singleneuron_xxxx function to analyse the data you extracted from database.
+# 2. use singleneuron_analysis function to transfer the df to a dict containing all comparisons.
+
+def singleneuron_array_analysis(array, baseline, ci, **kwargs):
+    """
+    This function is used to analyse whether the response period have increased activity by 
+    giving the response array.
+
+    The array should be only response period. No baseline required. 
+    The length of the array should be what you want to analyse.
+    baseline and ci are for baseline period.
+    If you need to define the activation/sensitization should happen in some range like 1h, 
+    you can use kwargs basic_range, set a number like 4 to test if it happen in first 4 numbers.
+    the activation / sensitization standard is baseline + ci
+    """
+    
+    array = np.array(array)
+    array1 = array > (baseline + ci)
+    array2 = np.append([0], array1[:-1])
+    array3 = np.append(array1[1:], [array1[-1]*array1[-2]])
+    array_final = ((array1 * array2 + array1 * array3) > 0) *1
+    
+    result = {'immediate': array[0]>baseline+ci,
+              'longterm_activation': np.sum(array_final) > 0
+             }
+    
+    if 'basic_range' in kwargs.keys():
+        test_period = array_final[0:kwargs['basic_range']]
+        result['longterm_activation'] = np.sum(test_period) > 0
+        
+    if result['longterm_activation']:
+        result['delay'] = np.where(array_final == 1)[0][0]
+        result['duration'] = np.sum(array_final)
+        if baseline != 0:
+            result['magnification'] = np.sum((array * array_final) / baseline)/result['duration']
+        else:
+            result['magnification'] = (array * array_final) / kwargs['alter_baseline']
+    else:
+        result['delay'] = np.nan#None
+        result['duration'] = np.nan#None
+        result['magnification'] = np.nan#None
+    
+    return(result)
+    
+    
+
+def decode_singleneuron_mech(data, key, rootpath, response_points = 8):
+    # This function is to help you build data df based on the data extracted from database
+    # data is a dict extract from database.
+    # key is the treatment key.
+    # response_points defines how many response points you want to analyze.
+    result = {}
+    result['filepath'] = os.path.join(rootpath, data['file_path'])
+    result['data'] = np.loadtxt(result['filepath'], delimiter = ',')
+    treatpoint = data['treat_point'][key]
+    
+    result['th_data'] = result['data'][treatpoint:treatpoint+response_points,0] 
+    result['th_baseline'] = data['result'][key]['th_baseline']
+    result['th_ci'] = data['result'][key]['th_ci']
+    
+    result['th_sensitization'] = data['result'][key]['neuron_sensitization_th_whe']
+    if result['th_sensitization'] == 'Y':
+        tmp = singleneuron_array_analysis(result['th_data'], result['th_baseline'], result['th_ci'], basic_range = 8)
+        result['th_delay'] = tmp['delay']
+        result['th_duration'] = tmp['duration']
+        result['th_magnification'] = tmp['magnification']
+        result['th_area'] = tmp['duration'] * tmp['magnification']
+    else:
+        result['th_delay'] = np.nan
+        result['th_duration'] = np.nan
+        result['th_magnification'] = np.nan
+        result['th_area'] = np.nan
+    
+    result['sth_data'] = result['data'][treatpoint:treatpoint+response_points,1] 
+    result['sth_baseline'] = data['result'][key]['sth_baseline']
+    result['sth_ci'] = data['result'][key]['sth_ci']
+    result['sth_sensitization'] = data['result'][key]['neuron_sensitization_sth_whe']
+    if result['sth_sensitization'] == 'Y':
+        tmp = singleneuron_array_analysis(result['sth_data'], result['sth_baseline'], result['sth_ci'], basic_range = 8)
+        result['sth_delay'] = tmp['delay']
+        result['sth_duration'] = tmp['duration']
+        result['sth_magnification'] = tmp['magnification']
+        result['sth_area'] = tmp['duration'] * tmp['magnification']
+    else:
+        result['sth_delay'] = np.nan
+        result['sth_duration'] = np.nan
+        result['sth_magnification'] = np.nan
+        result['sth_area'] = np.nan
+        
+    return(result)
+
+def decode_singleneuron_spon(data, key, rootpath, response_points = 18):
+    # This function is to help you build data df based on the data extracted from database
+    # data is a dict extract from database.
+    # key is the treatment key.
+    # response_points defines how many response points you want to analyze.
+    result = {}
+    result['filepath'] = os.path.join(rootpath, data['file_path'])
+    result['data'] = np.loadtxt(result['filepath'], delimiter = ',')
+    treatpoint = data['treat_point'][key]
+    
+    result['res_data'] = result['data'][treatpoint:treatpoint+response_points] 
+    result['baseline'] = data['result'][key]['neuron_activation_baseline_average']
+    result['ci'] = data['result'][key]['neuron_activation_baseline_CI']
+    
+    try:
+        result['immed_activation'] = data['result'][key]['neuron_immediate_activation']
+    except:
+        if result['res_data'][0] > (result['baseline'] + result['ci']):
+            result['immed_activation'] = 'Y'
+        else:
+            result['immed_activation'] = 'N'
+           
+    result['activation'] = data['result'][key]['neuron_delay_activation']
+    if result['activation'] == 'Y':
+        tmp = singleneuron_array_analysis(result['res_data'], result['baseline'], result['ci'], basic_range = 12)
+        result['act_delay'] = tmp['delay']
+        result['act_duration'] = tmp['duration']
+        result['act_magnification'] = tmp['magnification']
+        result['act_area'] = tmp['duration'] * tmp['magnification']
+    else:
+        result['act_delay'] = np.nan
+        result['act_duration'] = np.nan
+        result['act_magnification'] = np.nan
+        result['act_area'] = np.nan
+        
+    return(result)
+
 def singleneuron_analysis(df):
     res = {}
     res['activation rate'] = analysis.build_chi_character(df['activation'].values)
-    res['immediate activation rate'] = analysis.build_chi_character(df['immed_activation'].values)
+    if 'immed_activation' in df.columns:
+        res['immediate activation rate'] = analysis.build_chi_character(df['immed_activation'].values)
     res['activation duration'] = analysis.build_ttest_character(df['acti_duration'].values)
     res['activation delay'] = analysis.build_ttest_character(df['acti_delay'].values)
     res['activation magnitude'] = analysis.build_ttest_character(df['acti_magnitude'].values)
@@ -175,9 +309,9 @@ def singleneuron_analysis(df):
     res['threshold sensitization delay'] = analysis.build_ttest_character(df['th_delay'].values)
     res['threshold sensitization magnitude'] = analysis.build_ttest_character(df['th_magnitude'].values)
     res['super threshold sensitization rate'] = analysis.build_chi_character(df['sth'].values)
-    res['super threshold sensitization duration'] =analysis.build_ttest_character(df['sth_duration'].values)
-    res['super threshold sensitization delay'] =analysis.build_ttest_character(df['sth_delay'].values)
-    res['super threshold sensitization magnitude'] =analysis.build_ttest_character(df['sth_magnitude'].values)
+    res['super threshold sensitization duration'] = analysis.build_ttest_character(df['sth_duration'].values)
+    res['super threshold sensitization delay'] = analysis.build_ttest_character(df['sth_delay'].values)
+    res['super threshold sensitization magnitude'] = analysis.build_ttest_character(df['sth_magnitude'].values)
     res['activation AUC'] = analysis.build_ttest_character(df['area_activated'].values)
     res['threshold sensitization AUC'] = analysis.build_ttest_character(df['th_area_activated'].values)
     res['super threshold sensitization AUC'] = analysis.build_ttest_character(df['sth_area_activated'].values)

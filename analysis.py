@@ -51,6 +51,7 @@ def build_chi_character(array, posSymbol = 'Y', method = 'polarbar'):
     res['neg'] = res['n'] - res['pos']
     res['percentage'] = res['pos'] / res['n']
     res['analysis_method'] = method
+    res['dataType'] = 'population'
     return(res)
 
 def build_ttest_character(array, method = 'box'):
@@ -63,6 +64,7 @@ def build_ttest_character(array, method = 'box'):
     res['stdev'] = np.std(array)
     res['sterr'] = res['stdev']/math.sqrt(res['n'])
     res['analysis_method'] = method
+    res['dataType'] = 'avgStd'
     return(res)
 
 
@@ -116,6 +118,8 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3):
 def analysis_between_groups_description(result_array, group_titles):
     """
     These function is to describe the comparison between groups.
+    use Mann–Whitney U test for mean and std comparison.
+    use fisher for population comparison.
     """
     def __intersection__(lists): 
         lst1 = lists[0]
@@ -123,37 +127,38 @@ def analysis_between_groups_description(result_array, group_titles):
             tmplst = lists[i]
             lst1 = list(set(lst1) & set(tmplst))
         return(lst1)
+
+    paired_compair = paired_analysis_idx(len(result_array))[0]
     
-    plist, __ = paired_analysis_idx(len(result_array))
     keys = list(result_array[0].keys())
     for k in keys:
-        for i in range(len(plist)):
-            
-            print('=============================================================')
-            print(k+'(%s (n=%d) vs %s (n=%d))'%(group_titles[plist[i][0]], len(result_array[plist[i][0]][k]['array']), 
-                                                group_titles[plist[i][1]], len(result_array[plist[i][1]][k]['array'])))
-            if len(result_array[plist[i][0]][k]['array']) > 8:
+        for pair in paired_compair:
+            datatype = result_array[pair[0]][k]['dataType']
+            if datatype == 'avgStd':
                 try:
-                    normaltest = stats.normaltest(result_array[plist[i][0]][k]['array'])
-                    print('normaltest: statistic=%.02f, pvalue=%.02f' % normaltest)
+                    aou, p = stats.mannwhitneyu(np.array(result_array[pair[0]][k]['array']).astype(float), 
+                                                np.array(result_array[pair[1]][k]['array']).astype(float))
+                    print('=======================================')
+                    print('%s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                                                                        result_array[pair[0]][k]['mean'], result_array[pair[0]][k]['sterr'],result_array[pair[0]][k]['n'],
+                                                                        result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'],
+                                                                        p, aou))
                 except:
-                    pass
-            else:
-                print('Not enough data for normal test.')
-            
-            try:
-                p = stats.mannwhitneyu(np.array(result_array[plist[i][0]][k]['array']).astype(float), 
-                                    np.array(result_array[plist[i][1]][k]['array']).astype(float))[1]
-                label = '%f\241%f vs %f\241%f (p=%f)' % (result_array[plist[i][0]][k]['mean'], result_array[plist[i][0]][k]['sterr'],
-                                                         result_array[plist[i][1]][k]['mean'], result_array[plist[i][1]][k]['sterr'],
-                                                         p)
-                if p < 0.05:
-                    label = '\x1b[31m' + label + '\x1b[0m'
-                print(label)
-            except:
-                print('Manning whitney analysis failed. May because the data is identical. ')
-                print(result_array[plist[i][0]][k]['array'])
-                print(result_array[plist[i][1]][k]['array'])
+                    print('=======================================')
+                    print('%s (%s vs %s): This comparison has problem. Please check the data')
+            elif datatype == 'population':
+                try:
+                    aou, p = stats.fisher_exact([[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
+                                                 [result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['neg']]
+                                                 ])
+                    print('=======================================')
+                    print('%s (%s vs %s): \n%d of %d vs %d of %d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                                                                        result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['n'],
+                                                                        result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'],
+                                                                        p, aou))
+                except:
+                    print('========================================')
+                    print('%s (%s vs %s): This comparison has problem. Please check the data')
                                     
             
             
@@ -264,14 +269,15 @@ def ax_polarbar(ax, result_arrays, title, group_title):
     ax.set_theta_zero_location("N")
     # clockwise
     #ax.set_theta_direction(-1)
+    ytop = math.ceil(max(arr)/0.1)*0.1
 
     # set the label
     #ticks = ['0:00', '3:00', '6:00', '9:00', '12:00', '15:00', '18:00', '21:00']
     xlocation = [0, width, 2*width, 3*width]#np.arange(N)*width
     ax.set_xticks([0, width, 2*width, 3*width])
     ax.set_xticklabels(group_title)
-    ax.set_ylim = [0,math.ceil(max(arr)/0.1)*0.1]
-    ax.set_yticks(np.linspace(0,1,N+1)[0:-1])
+    ax.set_ylim = [0,ytop]
+    ax.set_yticks(np.linspace(0,ytop,N+1)[0:-1])
     ax.set_yticklabels([])
     for i in range(N):
         ax.text(xlocation[i], max(arr[i]/2, 0.3), "{:.1%}".format(arr[i]), 
