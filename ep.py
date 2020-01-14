@@ -301,9 +301,22 @@ def singleneuron_analysis(df):
     res['activation rate'] = analysis.build_chi_character(df['activation'].values)
     if 'immed_activation' in df.columns:
         res['immediate activation rate'] = analysis.build_chi_character(df['immed_activation'].values)
-    res['activation duration'] = analysis.build_ttest_character(df['acti_duration'].values)
-    res['activation delay'] = analysis.build_ttest_character(df['acti_delay'].values)
-    res['activation magnitude'] = analysis.build_ttest_character(df['acti_magnitude'].values)
+
+    try:
+        res['activation duration'] = analysis.build_ttest_character(df['acti_duration'].values)
+    except:
+        pass
+
+    try:
+        res['activation delay'] = analysis.build_ttest_character(df['acti_delay'].values)
+    except:
+        pass
+
+    try:
+        res['activation magnitude'] = analysis.build_ttest_character(df['acti_magnitude'].values)
+    except:
+        pass
+
     res['threshold sensitization rate'] = analysis.build_chi_character(df['th'].values)
     res['threshold sensitization duration'] = analysis.build_ttest_character(df['th_duration'].values)
     res['threshold sensitization delay'] = analysis.build_ttest_character(df['th_delay'].values)
@@ -312,7 +325,12 @@ def singleneuron_analysis(df):
     res['super threshold sensitization duration'] = analysis.build_ttest_character(df['sth_duration'].values)
     res['super threshold sensitization delay'] = analysis.build_ttest_character(df['sth_delay'].values)
     res['super threshold sensitization magnitude'] = analysis.build_ttest_character(df['sth_magnitude'].values)
-    res['activation AUC'] = analysis.build_ttest_character(df['area_activated'].values)
+    
+    try:
+        res['activation AUC'] = analysis.build_ttest_character(df['area_activated'].values)
+    except:
+        pass
+    
     res['threshold sensitization AUC'] = analysis.build_ttest_character(df['th_area_activated'].values)
     res['super threshold sensitization AUC'] = analysis.build_ttest_character(df['sth_area_activated'].values)
 
