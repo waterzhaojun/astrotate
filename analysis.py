@@ -144,8 +144,9 @@ def analysis_between_groups_description(result_array, group_titles):
                                                                         result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'],
                                                                         p, aou))
                 except:
-                    print('=======================================')
-                    print('%s (%s vs %s): This comparison has problem. Please check the data')
+                    pass
+                    #print('=======================================')
+                    #print('%s (%s vs %s): This comparison has problem. Please check the data')
             elif datatype == 'population':
                 try:
                     aou, p = stats.fisher_exact([[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
@@ -157,8 +158,9 @@ def analysis_between_groups_description(result_array, group_titles):
                                                                         result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'],
                                                                         p, aou))
                 except:
-                    print('========================================')
-                    print('%s (%s vs %s): This comparison has problem. Please check the data')
+                    pass
+                    #print('========================================')
+                    #print('%s (%s vs %s): This comparison has problem. Please check the data')
                                     
             
             
