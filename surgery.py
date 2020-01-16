@@ -76,6 +76,17 @@ class Animal():
             """.format(self.animalid, self.species, self.strain, self.gender, self.transgenic_id, self.birthday, self.ear_punch, self.terminated, self.note)
             )
             conn.commit()
+
+            if self.transgenic_id != '':
+                cur = conn.cursor()
+                cur.execute(
+                    """
+                    UPDATE transgenic_animal_log
+                    Set cageid = 'terminated'
+                    WHERE animalid = '{}'
+                    """.format(self.transgenic_id)
+                )
+                conn.commit()
             
 
         elif len(animal) == 1: # load animal info
