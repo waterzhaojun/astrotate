@@ -176,3 +176,19 @@ class Animal():
         conn.close()
 
         
+    def do_earpunch(self):
+        if (self.ear_punch is not None) or (self.ear_punch != 'none'):
+            tmp = utils.select('Choose ear punch type: ', ['L', 'R', 'LR', 'LL', 'RR'])
+            conn = server.connect_server()
+            cur = conn.cursor()
+            cur.execute(
+                """
+                UPDATE surg_info
+                SET ear_punch = '{}'
+                WHERE animalid = '{}'
+                """.format(tmp, self.animalid)
+            )
+            conn.commit()
+            conn.close()
+        else:
+            print('This animal has been punched before.')
