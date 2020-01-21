@@ -259,11 +259,20 @@ def decode_singleneuron_mech(data, key, rootpath, response_points = 8):
         
     return(result)
 
-def decode_singleneuron_spon(data, key, rootpath, response_points = 18):
-    # This function is to help you build data df based on the data extracted from database
-    # data is a dict extract from database.
-    # key is the treatment key.
-    # response_points defines how many response points you want to analyze.
+def decode_singleneuron_spon(data, key, rootpath, response_points = 18, **kwargs):
+    """
+    This function is to help you build data df based on the data extracted from database
+    data is a dict extract from database.
+    key is the treatment key.
+    response_points defines how many response points you want to analyze.
+
+    If you want to get a response period activity / sensitivity value, like time point 4 to
+    time point 6 activity average value, set spon_activity_name_list which is the output label name list,
+    and spon_activity_timepoint_list which is the required time points list (shape is n * 2).
+    For sensitivity, you need to set th_value_name_list, th_value_timepoint_list, sth_value_name_list, 
+    sth_value_timepoint_list.
+    the element in timepoint_list should be [start, end] and count the sequence only in response period.
+    """
     result = {}
     result['filepath'] = os.path.join(rootpath, data['file_path'])
     result['data'] = np.loadtxt(result['filepath'], delimiter = ',')
@@ -272,6 +281,11 @@ def decode_singleneuron_spon(data, key, rootpath, response_points = 18):
     result['res_data'] = result['data'][treatpoint:treatpoint+response_points] 
     result['baseline'] = data['result'][key]['neuron_activation_baseline_average']
     result['ci'] = data['result'][key]['neuron_activation_baseline_CI']
+
+    if 'spon_activity_name_list' in kwargs.keys():
+        if len(kwargs['spon_activity_name_list']) > 0:
+            for i in len(kwargs['spon_activity_name_list']):
+                result[kwargs['spon_activity_name_list'][i]] = result['res_data'][kwargs['spon_activity_timepoint_list'][i,0] : kwargs['spon_activity_timepoint_list'][i,1]] / result['baseline']
     
     try:
         result['immed_activation'] = data['result'][key]['neuron_immediate_activation']

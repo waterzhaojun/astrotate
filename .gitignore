@@ -7,3 +7,4 @@ transgenic/config.json
 .vscode/
 lib/
 config.yml
+.pyc
