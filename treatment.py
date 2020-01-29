@@ -24,24 +24,8 @@ secondary_antibody_list = ['goat anti rabbit']
 
 
 
-def optoStimulation():
-
-    def __power__(value):
-        t = {'value': value}
-        t['power_measure_device'] = 'EXTECH EasyView 33'
-        return(t)
-
-    treat = {'method': 'opto stimulation'}
-    treat['duration'] = input('Stimulation duration (sec, input an int): ')+'sec'
-    treat['power'] = __power__(int(input('opto stimulation power. (input an int number):' )))
-
-    treat['stimulation_type'] = utils.select('Choose stimulation type: ', ['continue', 'discrete'])
-    if treat['stimulation_type'] == 'discrete':
-        treat['freq']: input('stimulation frequency. unit is Hz. input a float number: ')+'Hz'
-        treat['on_duration']: input('In each loop, stimulation on duration, unit is sec. input a float number: ')+'sec'
-    return(treat)
-
 def ihcstain():
+    # deprecated
     treat = {'method': 'IHC stain'}
 
     treat['stain_type'] = utils.select(['fluorescence', 'DAB'])
@@ -113,6 +97,20 @@ def create_treatment_with_timepoint():
         i = i+1
         flag = utils.select('More treatment?', [True, False], 0)
     return(treatment)
+
+def choose_treatment():
+    treatlist = ['baseline', 'CSD', 'drug application', 'setup window', 'IHC', 'AAV inject', 
+    'purfusion', 'opto stimulation']
+    newt = utils.select('Which treatment you want to choose: ', treatlist)
+    if newt == 'baseline':
+        t = Baseline()
+    elif newt == 'CSD':
+        t = CSD()
+    elif newt == 'opto stimulation':
+        t = OptoStimulation()
+    
+    return(t.toDict())
+
     
 #========================================================
 
@@ -144,12 +142,24 @@ class Treatment():
         del a['__title__']
         return(a)
 
+class OptoStimulation(Treatment):
+    def __init__(self):
+        super().__init__('opto stimulation')
+        self.parameters['duration'] = input('Stimulation duration (sec, input an int): ')+'sec'
+        self.parameters['power percentage'] = int(input('opto stimulation power. (input an int number for percentage int part):' ))
+        self.parameters['stimulation_type'] = utils.select('Choose stimulation type: ', ['continue', 'discrete'])
+        if self.parameters['stimulation_type'] == 'discrete':
+            self.parameters['freq']= input('stimulation frequency. unit is Hz. input a float number: ')+'Hz'
+            self.parameters['width']= input('Width of the stimulation, unit is sec. input a float number: ')+'sec'
+    
 
 class CSD(Treatment):
     def __init__(self):
         csd_method_list = ['pinprick', 'KCl']
         super().__init__('CSD')
         self.parameters['apply_method'] = utils.select('Choose CSD method: ', csd_method_list)
+        if self.parameters['apply_method'] == 'KCl':
+            self.parameters['concentration'] = input('KCl concentration (unit is mM, input int part) ')
  
 class Baseline(Treatment):
     def __init__(self):

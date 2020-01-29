@@ -14,6 +14,8 @@ import numpy as np
 from astrotate import array, utils, treatment, config, analysis, server
 import json
 from datetime import datetime
+import tkinter
+from tkinter import filedialog
 
 def check_channel_name(exp_folder, trialNum = None):
     files = os.listdir(exp_folder)
@@ -93,75 +95,6 @@ def file_format(data_type, **kwargs):
         
     return(base+'.csv')    
 
-
-# the following part come from info.py. Now as this info is only used in ep, so I merge them in ep.py
-# ===============================================================================================
-def getInfoList(rootPath):
-    folders = os.listdir(rootPath)
-    folders = [os.path.join(rootPath, x) for x in folders]
-    folders = [x for x in folders if os.path.isdir(x)]
-    animalfolders = []
-    for f in folders:
-        tmp = [os.path.join(f, x, 'info.json') for x in os.listdir(f)]
-        animalfolders = animalfolders + tmp
-    
-    animalfolders = [x for x in animalfolders if os.path.exists(x)]
-    return(animalfolders)
-
-def getListWithExpType(rootPath, expType):
-    infoList = getInfoList(rootPath)
-    finalList = []
-    for i in infoList:
-        try:
-            tmp = utils.readjson(i)
-            if expType in tmp.keys():
-                finalList.append(i)
-        except:
-            print('%s has problem, fail to load' % i)
-    return(finalList)
-
-def getInfoContent(rootPath, keyarray):
-        
-    animalfolders = getInfoList(rootPath)
-    result = []
-    for f in animalfolders:
-        info = utils.readjson(f)
-        try:
-            finalc=info
-            for k in keyarray:
-                finalc = finalc[k]
-            result.append([f, finalc])
-        except:
-            pass
-        
-    return(result)
-
-def checkTreatmentDrug(treatArrayList):
-    finalList = []
-    for treat in treatArrayList:
-        for t in treat[1].keys():
-            try:
-                if 'drug apply' == treat[1][t]['method']:
-                    finalList.append([treat[0], treat[1][t]['activate_drug']])
-            except:
-                pass
-    return(finalList)
-
-
-def treatmentMethod(info, method):
-    treatment = info['treatment']
-    thekey = []
-    thedict = []
-    for key, value in treatment.items():
-        if value['method'] == method:
-            thekey.append(key)
-            thedict.append(value)
-    if len(thekey) == 0:
-        thekey = [None]
-        thedict = [{}]
-    elif len(thekey) > 1:
-        raise Exception('No or more than 1 this method treatment')
-    return(thekey[0], thedict[0])
 
 # ================================================================================
 # analyse part ========================================================================
@@ -367,95 +300,130 @@ def singleneuron_analysis(df):
 # animal treatment, and the experiment data 
 # ========================================================================================================================================
 # ========================================================================================================================================        
-class Exp(config.Experiment):
-    """
-    The reason to structure the 2P data based on animal, date, but not run is because each animal
-    will only expect receive 1 treatment. Even has multiple treatment, the previous treatment will
-    effect the later treatment. So it is hard to seperate treatment in each runs. So it will be better
-    understand to give a total treatment list, and add all runs in one info.json, for each run, just need to 
-    give a situation value to label it.
-    """
-    def __init__(self, animalid, cgobj):
-        self.__keys__ = ['animalid', 'animalinfo', 'date', 'project', 'treatment', 'note']
+class Experiment():
+    def __init__(self, animalid):
+
+        self.animalid = animalid
+
         conn = server.connect_server()
         cur = conn.cursor()
         cur.execute(
         """
-        SELECT {} FROM ep_info
+        SELECT animalinfo, transgenic_id, date, note, weight, gender, species, strain, pilot, treatment FROM ep_info
         WHERE animalid = '{}';
-        """.format(', '.join(self.__keys__), animalid)
+        """.format(animalid)
         )
         animal = cur.fetchall()
         conn.commit()
 
-        if len(animal) == 0: # need to build new animal info
-            self.animalid = animalid
-            self.animalinfo = {}
-            self.animalinfo['species'] = utils.select('Choose animal strain: ', ['rat', 'mouse'])
-            if self.animalinfo['species'] == 'rat':
-                self.animalinfo['strain'] = 'SD'
-            elif self.animalinfo['species'] == 'mouse':
-                self.animalinfo['strain'] = utils.select('What is the strain: ', ['C57'])
+        if len(animal) <1:
+            self.gender = None
 
-            self.animalinfo['transgenic_id'] = input('transgenic db id. Press ENTER to ignore: ')
-            if self.animalinfo['transgenic_id'] != '':
+            self.transgenic_id = input('transgenic id: ')
+            if self.transgenic_id != '':
                 cur = conn.cursor()
                 cur.execute(
-                """
-                SELECT dob,gender FROM transgenic_animal_log
-                WHERE animalid = '{}';
-                """.format(self.transgenic_id)
+                    """
+                    SELECT gender from transgenic_animal_log
+                    WHERE animalid = '{}'
+                    """.format(self.transgenic_id)
                 )
-                dob = cur.fetchall()
+                tinfo = cur.fetchall()
                 conn.commit()
-                self.animalinfo['birthday'] = dob[0][0]
-                self.animalinfo['gender'] = dob[0][1]
-            else:
-                tmp = input('Animal birthday (format month-day-year). Press ENTER to ignore: ')
-                if tmp != '':
-                    self.animalinfo['birthday'] = utils.format_date(tmp)
-                else:
-                    self.animalinfo['birthday'] = None
-                self.animalinfo['gender'] = utils.select('Choose animal gender: ', ['M', 'F'], defaultChoose = 0)
-
-            self.animalinfo['weight'] = int(input('Animal weight. unit is g. input an int: '))
+                if len(tinfo) == 1:
+                    self.gender = tinfo[0][0]
             
-            self.animalinfo['brain_bloom'] = utils.select('Brain bloom? : ', ['N', 'Y'], defaultChoose = 0)
-            self.animalinfo['sub_bleeding'] = utils.select('Sub bleeding? : ', ['N', 'Y'], defaultChoose = 0)
-            self.animalinfo['ever_search_neuron'] = utils.select('Ever search neuron? : ', ['N', 'Y'], defaultChoose = 0)
-            self.animalinfo['give_oxygen'] = utils.select('Give oxygen? : ', ['N', 'Y'], defaultChoose = 1)
+            if self.gender is None:
+                self.gender = utils.select('Animal gender: ', ['M', 'F'])
             
-            self.date = utils.format_date(input('Exp date. Press ENTER for today. Otherwise, input mm/dd/yyyy: '))
-
-            self.project = utils.projectArrayInput(cgobj)
-
-            tmp = input('Any note?')
-            if tmp != '':
-                self.note = tmp
+            self.animalinfo = {}
+            self.animalinfo['brain_bloom'] = utils.select('brain bloom? ', ['Y', 'N'], defaultChoose = 1)
+            self.animalinfo['give_oxygen'] = utils.select('gave oxygen? ', ['Y', 'N'], defaultChoose = 0)
+            self.animalinfo['sub_bleeding'] = utils.select('sub_bleeding? ', ['Y', 'N'], defaultChoose = 1)
+            self.date = utils.format_date(datetime.strptime(animalid[-10:-2], '%Y%m%d').strftime('%m-%d-%Y'))
+            self.weight = int(input('weight, input an integar (unit is g, jus integar like 330): '))
+            self.species = utils.select('species: ', ['rat', 'mouse'])
+            if self.species == 'rat':
+                self.strain = utils.select('Strain: ', ['SD'])
             else:
-                self.note = None
+                self.strain = utils.select('Strain: ', ['C57BL/6J'])
+            self.pilot = utils.select('Is it a pilot experiment? ', ['Y', 'N'])
+            self.pilot = self.pilot == 'Y'
+            self.note = input('Any note? ')
+            self.treatment = {}
 
-            # add the new animal in database
             cur = conn.cursor()
             cur.execute(
-            """
-            INSERT INTO ep_info
-            (animalid, animalinfo, date, project, note) 
-            VALUES (%s, %s, %s, %s, %s)
-            """, (self.animalid, json.dumps(self.animalinfo), self.date, self.project, self.note)
+                """
+                INSERT into ep_info (animalid, animalinfo, transgenic_id, date, note, weight, gender, species, strain, pilot, treatment)
+                VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')
+                """.format(self.animalid, json.dumps(self.animalinfo), self.transgenic_id, self.date,
+                self.note, self.weight, self.gender, self.species, self.strain, self.pilot, json.dumps(self.treatment)
+                )
             )
             conn.commit()
-            
-
-        elif len(animal) == 1: # load animal info
-            for i in range(len(self.__keys__)):
-                setattr(self, self.__keys__[i], animal[0][i])
+        elif len(animal) == 1:
+            self.animalinfo = animal[0][0]
+            self.transgenic_id = animal[0][1]
+            self.date = utils.format_date(animal[0][2].strftime('%m-%d-%Y'))
+            self.note = animal[0][3]
+            self.weight = animal[0][4]
+            self.gender = animal[0][5]
+            self.species = animal[0][6]
+            self.strain = animal[0][7]
+            self.pilot = animal[0][8]
+            self.treatment = animal[0][9]
 
         conn.close()
 
-    
+    def add_treatment(self):
+        treatlen = len(self.treatment.keys())
+        self.treatment[str(treatlen)] = treatment.choose_treatment()
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE ep_info
+            SET treatment = '{}'
+            WHERE animalid = '{}'
+            """.format(json.dumps(self.treatment), self.animalid)
+        )
+        conn.commit()
+        conn.close()
 
-    def add_data(self, dataObj):
-        # use this to add a new data to exp and update it to the json file in database
-        self.data.append(dataObj.output())
-        self.writeExp()
+    def reset_treatment(self):
+        self.treatment = {}
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE ep_info
+            SET treatment = '{}'
+            WHERE animalid = '{}'
+            """.format(json.dumps(self.treatment), self.animalid)
+        )
+        conn.commit()
+        conn.close()
+
+    def delete_last_treatment(self):
+        tlen = len(self.treatment.keys())
+        del self.treatment[str(tlen-1)]
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE ep_info
+            SET treatment = '{}'
+            WHERE animalid = '{}'
+            """.format(json.dumps(self.treatment), self.animalid)
+        )
+        conn.commit()
+        conn.close()
+
+    def add_data(self):
+        root = tkinter.Tk()
+        root.withdraw()
+        #root.update()
+        file_path = filedialog.askopenfilename()
+        #root.destroy()
+        print(file_path)
