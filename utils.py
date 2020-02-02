@@ -26,11 +26,6 @@ def writejson(path, data):
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
 
-def update():
-    # As this module is frequently updated, this function helps you update the module
-    # This function is still under development. Not usable.
-    # importlib.reload(astrotate)
-    pass
 
 def format_date(string, outputformat = '%m-%d-%Y'):
     # the correct sequence should be month/day/year, otherwise there might be some error

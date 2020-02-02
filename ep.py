@@ -17,6 +17,9 @@ from datetime import datetime
 import tkinter
 from tkinter import filedialog
 
+root = os.path.join(config.Config().system_path['root'], config.Config().system_path['electrophysiology'])
+
+
 def check_channel_name(exp_folder, trialNum = None):
     files = os.listdir(exp_folder)
     files = [x for x in files if ((x[-4:] == '.txt') & (len(x.split('-'))>1))]
@@ -421,9 +424,95 @@ class Experiment():
         conn.close()
 
     def add_data(self):
-        root = tkinter.Tk()
-        root.withdraw()
+        # If need to add another data type in this function, two part (if/elif) need to update
+
+        tkroot = tkinter.Tk()
+        tkroot.withdraw()
         #root.update()
-        file_path = filedialog.askopenfilename()
-        #root.destroy()
-        print(file_path)
+        folder_path = filedialog.askdirectory()
+        tkroot.destroy()
+        date_template = utils.format_date(self.date, '%b-%d-%y')
+        filelist = os.listdir(folder_path)
+        filelist = [os.path.join(folder_path, x) for x in filelist if date_template in x]
+        filelist.sort()
+        trials =[]
+        channelnames = []
+        for i in range(len(filelist)):
+            tmp = [filelist[i].split('-')[-1]]#.split('.')[0]]
+            contenttmp = pd.read_csv(filelist[i], sep = '\t', nrows = 1)
+            tmp.append(list(contenttmp.columns))
+            tmp.append(filelist[i])
+            trials.append(tmp)
+            channelnames = channelnames + list(contenttmp.columns)
+        channelnames = list(set(channelnames))
+
+        datatype = utils.select('Choose your data type: ', ['single neuron', 'multi unit', 'LFP', 'BF', 'ECoG', 'DC'])
+        if datatype == 'multi unit':
+            scanrate = 1
+            savepath = os.path.join(root, 'MULTIUNIT', 'multi'+self.animalid[1:]+'.csv')
+        elif datatype == 'BF':
+            scanrate = 0.2
+            savepath = os.path.join(root, 'BF', 'bf'+self.animalid[1:]+'.csv')
+        elif datatype == 'DC':
+            scanrate = 10
+            savepath = os.path.join(root, 'DC', 'dc'+self.animalid[1:]+'.csv')
+
+        channelname = utils.select('Choose the channel where your data come from: ', channelnames)
+        output_freq = int(input('Your spike2 file output freq? (input an int): '))
+
+        trials = [x for x in trials if channelname in x[1]]
+        print(trials)
+        data = []
+        for i in range(len(trials)):
+            tmp = list(array.bint1D(pd.read_csv(trials[i][2], sep='\t').loc[:,channelname].values, int(output_freq/scanrate)))
+            data = data + tmp
+            trials[i].append(len(tmp))
+
+        # Each trials element is a list containing trial name, channel names, path, data length
+        lengthlist = [x[3] for x in trials]
+        treat_point = {}
+        for key, value in self.treatment.items():
+            tmptrial = utils.select('which trial for %s: %s' % (key, value['method']), [x[0] for x in trials])
+            tmpsec = int(input('When did this treatment happen in trial %s (input the time by sec): ' % tmptrial))
+            tmp = [x[0] for x in trials].index(tmptrial)
+            #tmp = tmp
+            treat_point[key] = int(sum(lengthlist[0:tmp])+tmpsec * scanrate)
+
+        np.savetxt(savepath, data)
+
+        conn = server.connect_server()
+        if datatype == 'multi unit':
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT into ep_data_multiunit (animalid, treat_point, filepath, scanrate)
+                VALUES ('{}', '{}', '{}', '{}')
+                """.format(self.animalid, json.dumps(treat_point), os.path.basename(savepath), scanrate
+                )
+            )
+            conn.commit()
+        elif datatype == 'BF':
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT into ep_data_bf (animalid, treat_point, filepath)
+                VALUES ('{}', '{}', '{}')
+                """.format(self.animalid, json.dumps(treat_point), os.path.basename(savepath)
+                )
+            )
+            conn.commit()
+        elif datatype == 'DC':
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT into ep_data_dc (animalid, treat_point, filepath, scanrate)
+                VALUES ('{}', '{}', '{}', '{}')
+                """.format(self.animalid, json.dumps(treat_point), os.path.basename(savepath), scanrate
+                )
+            )
+            conn.commit()
+
+        conn.close()
+        print(treat_point)
+
+    
