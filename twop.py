@@ -161,6 +161,8 @@ def get_data_list(datatype, analysis_method, **kwargs):
 # =======================================================================================================================================================
 # Data class is an object for two photon data. It contains the information how the data was recorded, under which situation when the animal experiencing 
 # test, the setting of scanbox.
+#
+# Runpara class is an object contains all information about the recording system
 # =======================================================================================================================================================
 # =======================================================================================================================================================
 class Runpara:

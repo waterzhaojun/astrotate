@@ -10,14 +10,16 @@ class Notebook():
             self.description = input('Description: ')
             cg = config.Config()
             self.author = utils.select('Author: ', cg.operator, 0)
+            self.main = int(input('main: '))
+            self.type = utils.select('type: ', ['paper', 'analysis', 'tech'])
             
             cur = conn.cursor()
             cur.execute(
             """
-            INSERT INTO projects (path, description, title, author)
-            VALUES ('{}', '{}', '{}', '{}')
+            INSERT INTO projects_nb (path, description, title, author, main, type)
+            VALUES ('{}', '{}', '{}', '{}', '{}', '{}')
             RETURNING pid
-            """.format(self.path, self.description, self.title, self.author)
+            """.format(self.path, self.description, self.title, self.author, self.main, self.type)
             )
             pid = cur.fetchone()
             conn.commit()
@@ -27,7 +29,7 @@ class Notebook():
             cur = conn.cursor()
             cur.execute(
             """
-            SELECT path, description, title, author from projects
+            SELECT path, description, title, author, main, type from projects_nb
             WHERE pid = '{}'
             """.format(self.pid)
             )
@@ -37,5 +39,7 @@ class Notebook():
             self.description = tmp[1]
             self.title = tmp[2]
             self.author = tmp[3]
+            self.main = tmp[4]
+            self.type = tmp[5]
 
         conn.close()
