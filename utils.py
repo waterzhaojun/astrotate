@@ -71,6 +71,21 @@ def select(hellowords, array, defaultChoose = None, **kwargs):
 
     return(final)
 
+def multi_select(hellowords, array):
+    result = []
+    flag = True
+    while flag:
+        tmp = select(hellowords, array)
+        result.append(tmp)
+        array.remove(tmp)
+        if len(array) > 0:
+            flag = (select('More choice? ', ['No', 'Yes']) == 'Yes')
+        else:
+            flag = False
+    return(result)
+
+
+
 def select_from_dict(hellowords, dict, **kwargs):
     # This function helps you use input function to select a key value from a dict.
     # The input should be a dict. The function list all the 'key: value' out. 

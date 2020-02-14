@@ -17,6 +17,7 @@ from astrotate import utils
 import psycopg2
 import json
 import sys
+from datetime import datetime
 
 def get_config(path = 'config.json'):
     with open(path, 'r') as f:
@@ -87,25 +88,15 @@ class Config:
 # ========================================================================================================================================
 # ========================================================================================================================================   
 class Experiment:
-    def __init__(self, config, catagory):
-        self.root = config.system_path['root']
-        self.catagoryroot = os.path.join(config.system_path['root'], config.system_path[catagory])
-        self.infopath = None
-        self.keys = ['animal', 'treatment', 'data']
-
-    def __setinfopath__(self):
-        pass
-
-    def loadExp(self):
-        tmp = utils.readjson(self.infopath)
-        for key, value in tmp.items():
-            setattr(self, key, value)
-
-    def writeExp(self):
-        tmp = {}
-        for key in self.keys:
-            tmp[key] = getattr(self, key)
-        utils.writejson(self.infopath, tmp)
+    def __init__(self):#, config, catagory):
+        #self.root = config.system_path['root']
+        #self.catagoryroot = os.path.join(config.system_path['root'], config.system_path[catagory])
+        #self.infopath = None
+        #self.keys = ['animal', 'treatment', 'data']
+        self.animalid = input('animalid: ')
+        date = input('experiment date (mm-dd-yyyy): ')
+        self.date = datetime.strptime(date,'%m-%d-%Y')
+        self.note = input('experiment note')
 
     def show(self):
         # Check your config file

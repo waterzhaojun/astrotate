@@ -90,12 +90,12 @@ def create_treatment_with_timepoint():
     flag = True
     i = 0
     treatment = {}
-    treat_list = ['Baseline', 'CSD', 'Drug']
+    treat_list = ['Baseline', 'CSD', 'Drug', 'OptoStimulation']
     while flag:
         treat_type = utils.select('Choose the treatment type you want to enter: ', treat_list)
         treatment[str(i)] = eval(treat_type+'()').toDict()
         i = i+1
-        flag = utils.select('More treatment?', [True, False], 0)
+        flag = utils.select('More treatment?', [False, True], 1)
     return(treatment)
 
 def choose_treatment():

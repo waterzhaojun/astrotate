@@ -76,6 +76,15 @@ def identify_value_type(array):
         return('value')
 
 def analysis_singleKey_between_groups(result_array, key, anaFun):
+    """
+    This function is to analyse the key between result array element
+    """
+    pass
+
+def plot_singleKey_between_groups(result_array, key, anaFun):
+    """
+    This function is to plot the key between result array element
+    """
     pass
 
 def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3):

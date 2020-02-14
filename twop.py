@@ -13,6 +13,20 @@ from scipy.io import loadmat
 objective = {'Nikon': ['X16']}
 magnitude_list = [0.8, 1, 2.0, 2.4, 4.0, 4.8, 5.7]
 
+"""
+So far the idea to organize the two photon data is:
+
+-- twop_info: contains almost all information of an experiment. The path refers to the animal on certain day. 
+it may contains a lot each run data, including wheel running, astrocyte signal, vessel diameter, etc.
+These are tidy data from raw data. 
+
+-- twop_data: These data are analysis data, not just signal. It may contains signal but not necessary.
+Right now I have two analysis method finished building code: AQuA, CSD.
+
+-- twop_run_para: These table records all parameters like coordinates, power etc information.
+
+"""
+
 
 def folder_format(animalid, date, run):
     out = str(date) + '_' + animalid + '_run' + str(run)
@@ -450,46 +464,39 @@ class Exp2P(cg.Experiment):
     understand to give a total treatment list, and add all runs in one info.json, for each run, just need to 
     give a situation value to label it.
     """
-    def __init__(self, animalid, dateid):
-
-        self.__keys__ = ['animalid', 'date', 'treatment', 'note']
-        self.animalid = animalid
-        self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
+    def __init__(self):
+        super().__init__()
+        #self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
         conn = server.connect_server()
         cur = conn.cursor()
         cur.execute(
         """
-        SELECT * FROM twop_info
+        SELECT path,treatment,note FROM twop_info
         WHERE animalid = %s and date = %s;
         """, (self.animalid, self.date)
         )
-        animal = cur.fetchall()
+        exp = cur.fetchone()
         conn.commit()
 
-        if len(animal) == 0: # need to build new animal info
-            self.animalid = animalid
-            self.date = utils.format_date(datetime.strptime(dateid, '%y%m%d').strftime('%m/%d/%Y'))
+        if exp == None: # need to build new animal info
             self.treatment = treatment.create_treatment_with_timepoint()
-            tmp = input('Any note?')
-            if tmp != '':
-                self.note = tmp
-            else:
-                self.note = None
-
+            self.path = os.path.join(self.animalid, self.date.strftime('%y%m%d'))
             # add the new animal in database
             cur = conn.cursor()
             cur.execute(
             """
             INSERT INTO twop_info
-            (animalid, date, treatment, note) 
-            VALUES (%s, %s, %s, %s)
-            """, (self.animalid, self.date, json.dumps(self.treatment), self.note)
+            (animalid, date, path, treatment, note) 
+            VALUES (%s, %s, %s, %s, %s)
+            """, (self.animalid, self.date, self.path, json.dumps(self.treatment), self.note)
             )
             conn.commit()
             
 
-        elif len(animal) == 1: # load animal info
-            for i in range(len(self.__keys__)):
-                setattr(self, self.__keys__[i], animal[0][i])
+        else: # load animal info
+            self.path = exp[0]
+            self.treatment = exp[1]
+            self.note = exp[2]
 
         conn.close()
+
