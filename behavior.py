@@ -55,7 +55,7 @@ def get_bout(array, gap=2, duration=2, threshold=0):
         array_01 = array_01.replace('1'+'0'*i+'1', '1'+'1'*i+'1')
     array_01 = np.array(list(array_01)).astype(int)
         
-    df = pd.DataFrame(columns = ['start', 'end', 'length', 'average', 'peak'])
+    df = pd.DataFrame(columns = ['start', 'end', 'duration', 'average', 'peak'])
     flag = 0
     
     for i in range(len(array_01)):
@@ -77,10 +77,11 @@ def get_bout(array, gap=2, duration=2, threshold=0):
     df.reset_index(inplace = True, drop = True)
     
     for i in range(len(df)):
-        df.loc[i,'length'] = df.loc[i,'end']-df.loc[i,'start']+1
+        df.loc[i,'duration'] = df.loc[i,'end']-df.loc[i,'start']+1
         tmp = array[df.loc[i,'start']:df.loc[i,'end']+1]
         df.loc[i,'average'] = np.mean(tmp)
         df.loc[i,'peak'] = np.max(tmp)
+        df.loc[i,'distance'] = np.sum(tmp)
     #df.astype(int)
     return(df)
 
@@ -130,7 +131,8 @@ def analyse_wheelrunning_df(df):
     This function is to analysis behavior's WHEELRUNNING type df result.
     """
     res = {}
-    res['running length'] = analysis.build_ttest_character(df['length'].values)
+    res['running duration'] = analysis.build_ttest_character(df['duration'].values)
+    res['running distance'] = analysis.build_ttest_character(df['distance'].values)
     res['average speed'] = analysis.build_ttest_character(df['average'].values)
     res['peak speed'] = analysis.build_ttest_character(df['peak'].values)
     

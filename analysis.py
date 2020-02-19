@@ -87,7 +87,7 @@ def plot_singleKey_between_groups(result_array, key, anaFun):
     """
     pass
 
-def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3):
+def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, savepath = None):
     """
     When we analyse a group of data, we will get a dict containing series
     of analysis feature. If the analysis method is the same, different group
@@ -122,6 +122,8 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3):
             ax_scatter(ax, dictarray, key, group_titles)
     #fig.tight_layout()
     fig.subplots_adjust(hspace = 0.5, wspace = 0.7)
+    if savepath != None:
+        plt.savefig(savepath)
     plt.show()
 
 def analysis_between_groups_description(result_array, group_titles):
