@@ -90,7 +90,7 @@ def create_treatment_with_timepoint():
     flag = True
     i = 0
     treatment = {}
-    treat_list = ['Baseline', 'CSD', 'Drug', 'OptoStimulation']
+    treat_list = ['Baseline', 'Sham', 'CSD', 'Drug', 'OptoStimulation']
     while flag:
         treat_type = utils.select('Choose the treatment type you want to enter: ', treat_list)
         treatment[str(i)] = eval(treat_type+'()').toDict()
@@ -141,6 +141,10 @@ class Treatment():
         a= copy.copy(self.__dict__)
         del a['__title__']
         return(a)
+
+class Sham(Treatment):
+    def __init__(self):
+        super().__init__('sham')
 
 class OptoStimulation(Treatment):
     def __init__(self):

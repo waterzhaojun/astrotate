@@ -73,12 +73,14 @@ def main(mateid = args.mateid, mnum = args.malenum, fnum = args.femalenum,
     sexSeq = np.append(['M']*mnum, ['F']*fnum)
     cageSeq = np.append([mcage]*mnum, [fcage]*fnum)
 
+    generation = int(input('generation (input an integar): '))
+
     for i in range(len(sexSeq)):
         tmp_newname = baseSeq+'%02d'%(i)
         insertcommand = """
-        INSERT INTO transgenic_animal_log (animalid, cageid, dob, gender, birth_mate_id)
-        VALUES ('{}', '{}', '{}', '{}', '{}')
-        """.format(tmp_newname, cageSeq[i], record['birthday'], sexSeq[i], record['mateid'])
+        INSERT INTO transgenic_animal_log (animalid, cageid, dob, gender, birth_mate_id, generation)
+        VALUES ('{}', '{}', '{}', '{}', '{}', '{}')
+        """.format(tmp_newname, cageSeq[i], record['birthday'], sexSeq[i], record['mateid'], generation)
 
         cur = conn.cursor()
         cur.execute(insertcommand)

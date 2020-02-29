@@ -91,7 +91,7 @@ def label_running_array(array, pretreatdict, characters):
     # This function is the label each bout we got from the array by treatdict
     # characters is a dict should containing array frequency, time after last treatment with unit min
     # 
-    df = get_bout(array)
+    df = get_bout(array, gap = characters['running_gap_threshold'], duration = characters['running_duration_threshold'], threshold = characters['running_speed_threshold'])
     for i in range(len(df)):
         df.loc[i,'group'] = pretreatdict['method']
         df.loc[i,'time'] = int(characters['time_after_pretreat'] + df.loc[i,'start']/characters['freq']/60)
@@ -106,6 +106,8 @@ def build_result_wheelrunning(file,savefolder,pretreatdict,characters):
     savefolder = os.path.join(savefolder,'wheelrunning')
     if not os.path.exists(savefolder):
         os.mkdir(savefolder)
+    else:
+        pass
     
     
     clean_array = running_array(file, characters['bint_size'])

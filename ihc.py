@@ -8,11 +8,55 @@ import os
 
 import pandas as pd
 import numpy as np
-from astrotate import array, utils, treatment, surgery, config
+from astrotate import array, utils, treatment, surgery, config as cg
 import json
 
+tissue_list = ['dura', 'TG', 'brain', 'nerve', 'DRG', 'spinal cord', 'muscle', 'skin']
 
-class Exp(config.Experiment):
+class Exp(cg.Experiment):
+    def __init__(self):
+        super().__init__()
+        self.tissue = utils.select('which tissue: ', tissue_list)
+        conn = server.connect_server()
+        cur = conn.cursor()
+        cur.execute(
+        """
+        SELECT (primary, secondary, thickness, slice_id) FROM ihc_info
+        WHERE animalid = %s and date = %s and tissue = %s;
+        """, (self.animalid, self.date, self.tissue)
+        )
+        exp = cur.fetchall()
+        conn.commit()
+        
+        if len(exp) == 0:
+            if utils.select('Did staining? ', [False, True]):
+                self.primary = Antibody('primary').to_dict()
+                self.secondary = Antibody('primary').to_dict()
+            else:
+                self.primary = None
+                self.secondary = None
+            self.thickness = int(input('Thickness, just input int part, unit is um: '))
+            self.slice_id = ' '.join(self.animalid, self.tissue, self.date.strftime('%y%m%d'), '%02d'%(len(exp)+1))
+
+            cur = conn.cursor()
+            cur.execute(
+            """
+            INSERT INTO ihc_info 
+            (animalid, primary, secondary, tissue, date, thickness, note, slice_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, 
+            (self.animalid, json.dumps(self.primary), json.dumps(self.secondary), self.tissue, self.date, 
+            self.thickness, self.note, self.slice_id)
+            )
+            conn.commit()
+        
+        else:
+            self.recording_types = exp[0]
+            self.path = exp[1]
+            self.parameters = exp[2]
+            self.treatment = exp[3]
+
+        conn.close()
     def __init__(self, configpath = 'config.yml', primary = None, secondary = None):
         configobj = config.Config(configpath)
         super().__init__(configobj)
@@ -45,9 +89,14 @@ class Antibody():
     def __init__(self, type):
         self.type = utils.select('=== antibody type ===', ['primary', 'secondary'])
         if self.type == 'primary':
-            self.antibody = utils.select('=== which antibody ===', ['define', 'define'])
+            primary_list = ['GFAP']
+            self.antibody = utils.select('=== which antibody ===', primary_list)
             tmp = utils.input('=== how long did it treat ===/nPress ENTER for overnight, or input a value like 4h')
         elif self.type == 'secondary':
-            self.antibody = utils.select('=== which antibody ===', ['define', 'define'])
+            secondary_list = ['488 Goat anti Mouse']
+            self.antibody = utils.select('=== which antibody ===', secondary_list)
         
         self.concentration = '1:'+input('=== antibody concentration ===/n1:xxx, just input the second number by int: ')
+
+    def to_dict(self):
+        return({'type':self.type, 'antibody':self.antibody, 'concentration':self.concentration})
