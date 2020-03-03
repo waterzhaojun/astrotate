@@ -75,11 +75,32 @@ def identify_value_type(array):
     else:
         return('value')
 
-def analysis_singleKey_between_groups(result_array, key, anaFun):
+def analysis_singleKey_between_groups(result_array, key, group_titles, savepath = None):
     """
     This function is to analyse the key between result array element
     """
-    pass
+    def __intersection__(lists): 
+        lst1 = lists[0]
+        for i in range(1, len(lists)):
+            tmplst = lists[i]
+            lst1 = list(set(lst1) & set(tmplst))
+        return(lst1)
+    
+    fig = plt.figure()
+    
+    ax = fig.add_subplot(n_rows, n_fig_of_each_row, i+1)
+    
+    dictarray = [x[key] for x in result_array]
+    analysis = __intersection__([x[key]['analysis_method'] for x in result_array])
+    if 'box' in analysis:
+        ax_barplot(ax, dictarray, key, group_titles)
+    elif 'scatter' in analysis:
+        ax_scatter(ax, dictarray, key, group_titles)
+    #fig.tight_layout()
+    fig.subplots_adjust(hspace = 0.5, wspace = 0.7)
+    if savepath != None:
+        plt.savefig(savepath)
+    plt.show()
 
 def plot_singleKey_between_groups(result_array, key, anaFun):
     """
@@ -173,7 +194,26 @@ def analysis_between_groups_description(result_array, group_titles):
                     #print('========================================')
                     #print('%s (%s vs %s): This comparison has problem. Please check the data')
                                     
-            
+#============================================================================================================
+# description methods ==============================================================================================
+#============================================================================================================
+def description_ttest(result_list, key, group_titles, method = 'mann whitney u test'):
+    if method == 'mann whitney u test':
+        anamethod = stats.mannwhitneyu
+    plist, __ = paired_analysis_idx(len(result_list))
+    for pair in plist:
+        cfront = ''
+        cback = ''
+        p = anamethod(np.array(result_list[pair[0]][key]['array']).astype(float), np.array(result_list[pair[1]][key]['array']).astype(float))[1]
+        if p<0.05:
+            cfront = '\033[0;31m'
+            cback = '\033[0m'
+        print('%s (n=%d) vs %s (n=%d) by %s: \n%f+/-%f vs %f+/-%f %sp = %f%s ' % (group_titles[pair[0]], result_list[pair[0]][key]['n'],
+                                                                            group_titles[pair[1]], result_list[pair[1]][key]['n'], 
+                                                                            method, 
+                                                                            result_list[pair[0]][key]['mean'], result_list[pair[0]][key]['sterr'],
+                                                                            result_list[pair[1]][key]['mean'], result_list[pair[1]][key]['sterr'],
+                                                                            cfront, p, cback))
             
 
 #============================================================================================================
@@ -227,6 +267,7 @@ def ax_barplot(ax, result_array, title, group_titles):
     for i in range(len(plist)):
         p = stats.mannwhitneyu(np.array(result_array[plist[i][0]]['array']).astype(float), 
                                 np.array(result_array[plist[i][1]]['array']).astype(float))[1]
+        
         if p < 0.05:
             levelempty[level[i]-1] = 1
             label_diff(ax, plist[i], pvalue_text(p), xlocation, standardy + standardy * 0.12 * sum(levelempty[0:level[i]]))
