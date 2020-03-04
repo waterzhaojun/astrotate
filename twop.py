@@ -71,32 +71,32 @@ def groupCsdData(pathlist):
             c = pd.concat([c, tmp[3]])
     for k in df.columns:
         try:
-            res[k] = group_value_to_dict_element(df.loc[:,k].values)
+            res[k] = analysis.group_value_to_dict_element(df.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
     for k in a1.columns:
         try:
-            res[k] = group_value_to_dict_element(a1.loc[:,k].values)
+            res[k] = analysis.group_value_to_dict_element(a1.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
     for k in a2.columns:
         try:
-            res[k] = group_value_to_dict_element(a2.loc[:,k].values)
+            res[k] = analysis.group_value_to_dict_element(a2.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
     for k in c.columns:
         try:
-            res[k] = group_value_to_dict_element(c.loc[:,k].values)
+            res[k] = analysis.group_value_to_dict_element(c.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
         except:
             pass
     return(res)  
 
 # aqua analysis part ========================================================
-def readAquaData(path):
+def readAquaData(path, drop_cols = ['Index']):
     # This path is the folder path when output from AQuA.
     # Now I will use the excel file as the source of the result.
     # the result is a pandas dataframe
@@ -106,6 +106,8 @@ def readAquaData(path):
     nrow = len(tmp.columns)
     for i in range(nrow-1):
         df.loc[i, :] = tmp.loc[:,i+1].values
+    if len(drop_cols) > 0:
+        df.drop(columns = drop_cols, inplace = True)
     return(df)
 
 def groupAquaData(pathlist):

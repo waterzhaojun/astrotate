@@ -11,7 +11,7 @@ import numpy as np
 from astrotate import array, utils, treatment, surgery, config as cg
 import json
 
-tissue_list = ['dura', 'TG', 'brain', 'nerve', 'DRG', 'spinal cord', 'muscle', 'skin']
+tissue_list = ['dura', 'TG', 'brain', 'nerve', 'DRG', 'SpinalCord', 'muscle', 'skin']
 
 class Exp(cg.Experiment):
     def __init__(self):
@@ -86,17 +86,22 @@ class Exp(cg.Experiment):
         self.loadExp()
 
 class Antibody():
-    def __init__(self, type):
+    def __init__(self):
         self.type = utils.select('=== antibody type ===', ['primary', 'secondary'])
         if self.type == 'primary':
-            primary_list = ['GFAP']
+            primary_list = ['GFAP from mouse', 'DsRed from rabbit']
             self.antibody = utils.select('=== which antibody ===', primary_list)
-            tmp = utils.input('=== how long did it treat ===/nPress ENTER for overnight, or input a value like 4h')
+            
         elif self.type == 'secondary':
-            secondary_list = ['488 Goat anti Mouse']
+            secondary_list = ['488 Goat anti Mouse', '594 Goat anti Rabbit']
             self.antibody = utils.select('=== which antibody ===', secondary_list)
         
         self.concentration = '1:'+input('=== antibody concentration ===/n1:xxx, just input the second number by int: ')
+        tmp = input('=== how long did it treat ===/nPress ENTER for overnight, or input a value like 4h')
+        if tmp == '':
+            self.duration = 'overnight'
+        else:
+            self.duration = tmp
 
     def to_dict(self):
-        return({'type':self.type, 'antibody':self.antibody, 'concentration':self.concentration})
+        return({'type':self.type, 'antibody':self.antibody, 'concentration':self.concentration, 'duration': self.duration})
