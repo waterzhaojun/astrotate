@@ -73,24 +73,28 @@ def groupCsdData(pathlist):
         try:
             res[k] = analysis.group_value_to_dict_element(df.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
+            res[k]['dataType'] = 'avgStd'
         except:
             pass
     for k in a1.columns:
         try:
             res[k] = analysis.group_value_to_dict_element(a1.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
+            res[k]['dataType'] = 'avgStd'
         except:
             pass
     for k in a2.columns:
         try:
             res[k] = analysis.group_value_to_dict_element(a2.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
+            res[k]['dataType'] = 'avgStd'
         except:
             pass
     for k in c.columns:
         try:
             res[k] = analysis.group_value_to_dict_element(c.loc[:,k].values)
             res[k]['analysis_method'] = ['box']
+            res[k]['dataType'] = 'avgStd'
         except:
             pass
     return(res)  
@@ -129,10 +133,12 @@ def groupAquaData(pathlist):
             
     res['n_of_events'] = analysis.group_value_to_dict_element(res['n_of_events']['array'])
     res['n_of_events']['analysis_method'] = ['box']
+    res['n_of_events']['dataType'] = 'avgStd'
     
     res['event_character'] = {'character_columns': ['Basic - Area', 'Curve - Duration 50% to 50%', 'Curve - Max Dff']}
     res['event_character']['array'] = df[res['event_character']['character_columns']].values.tolist()
     res['event_character']['analysis_method'] = ['scatter']
+    res['event_character']['dataType'] = 'avgStd'
 
     cname = df.columns
     cname = [x for x in cname if x not in kickout_columns]
@@ -140,6 +146,7 @@ def groupAquaData(pathlist):
         try:
             res[i] = analysis.group_value_to_dict_element(df.loc[:,i].values)
             res[i]['analysis_method'] = ['box']
+            res[i]['dataType'] = 'avgStd'
         except:
             pass
     return(res)

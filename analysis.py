@@ -138,9 +138,15 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, s
         dictarray = [x[key] for x in result_array]
         analysis = __intersection__([x[key]['analysis_method'] for x in result_array])
         if 'box' in analysis:
-            ax_barplot(ax, dictarray, key, group_titles)
+            try:
+                ax_barplot(ax, dictarray, key, group_titles)
+            except:
+                pass
         elif 'scatter' in analysis:
-            ax_scatter(ax, dictarray, key, group_titles)
+            try:
+                ax_scatter(ax, dictarray, key, group_titles)
+            except:
+                pass
     #fig.tight_layout()
     fig.subplots_adjust(hspace = 0.5, wspace = 0.7)
     if savepath != None:

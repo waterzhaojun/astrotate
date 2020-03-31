@@ -11,6 +11,7 @@ style_list.loc[len(style_list), :] = [['R26tdTomato', 'CGRP.Cre'], 'CGRP.Cre-R26
 style_list.loc[len(style_list), :] = [['R26tdTomato', 'CGRP.Cre-R26tdTomato'], 'CGRP.Cre-R26tdTomato']
 style_list.loc[len(style_list), :] = [['R26tdTomato', 'NaV1.8'], 'NaV1.8-R26tdTomato']
 style_list.loc[len(style_list), :] = [['R26tdTomato', 'Pirt-Cre-R26tdTomato'], 'Pirt-Cre-R26tdTomato']
+style_list.loc[len(style_list), :] = [['R26tdTomato', 'NaV1.8-R26tdTomato'], 'NaV1.8-R26tdTomato']
 # print(style_list)
 
 def name_title(fullname):
