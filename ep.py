@@ -6,6 +6,7 @@ Created on Fri Aug 16 14:17:59 2019
 """
 
 # last update is 1/14/2020, I copy all function from google cloud.
+# The steps to analyse is: query an infodf, .....(to be continue)
 
 import os
 
@@ -96,7 +97,83 @@ def file_format(data_type, **kwargs):
     else:
         raise Exception('Does not have this type of experiment data')
         
-    return(base+'.csv')    
+    return(base+'.csv')   
+
+# ===================================================================================== 
+# query part ==========================================================================
+# =====================================================================================
+def get_exp_animal_list(tb_name):
+    # This function is to extract a df containing exp info
+    engine = server.server_engine()
+
+    neurondf = pd.read_sql('SELECT * FROM %s' % tb_name, engine)
+    animaldf = pd.read_sql('SELECT * FROM ep_info', engine)
+    df = pd.merge(neurondf, animaldf, how='left', left_on='animalid', right_on='animalid')
+    engine.dispose()
+    return(df)
+
+def extract_array_from_infodf(infodf, fn, paradict = None):
+    # infodf may have many columns, but the following columns is necessary: id, group, data
+    tmpdf = infodf.loc[:,'data'].map(lambda x: fn(x, paradict))
+    for i in range(len(tmpdf)):
+        tmp = np.reshape(tmpdf[i], [1,-1])
+        if i == 0:
+            array = tmp
+        else:
+            array = np.concatenate((array, tmp), axis = 0)
+    
+    return(array)
+
+
+def get_method_key(treatdic, method, nth_key=0, **kwargs):
+    """
+    This function is to query the key for specific method you want to check by giving treatment dict.
+    It might return multiple items. So you need to give the nth of the key, usually it is the first one.
+    You may set nth_key to -1 to get the last one.
+    For example, if you want the key when did CSD, write: get_method_key(treatdic, 'CSD')
+    If you want the key when treated drug right before CSD, write: get_method_key(treatdic, 'drug apply', nth_key=-1, key_limit = csdkey)
+    """
+    csdkey = []
+    for key, value in treatdic.items():
+        if value['method'] == method:
+            csdkey.append(key)
+    
+    csdkey = np.array(sorted([int(x) for x in csdkey]))
+
+    if len(csdkey)>0:
+        if kwargs.get('key_limit', False):
+            csdkey = csdkey[csdkey < int(kwargs['key_limit'])]
+        csdkey = str(csdkey[nth_key])
+    else:
+        csdkey = None
+
+    return(csdkey)
+
+
+def load_ep_data(path, treatpoint_dict, key, prepoints, postpoints):
+    """
+    This function is to read the ep data based on the path, treat point in the array, prepoints, postpoints
+    """
+    #print(path)
+    treatpoint = treatpoint_dict[key]
+    startpoint = treatpoint-prepoints
+    endpoint = treatpoint+postpoints
+    #print(treatpoint, startpoint, endpoint)
+
+    if treatpoint < prepoints:
+        raise Exception('not enough points before treatpoint')
+    
+    nextkey = str(int(key) + 1)
+    if nextkey in treatpoint_dict.keys():
+        if endpoint > treatpoint_dict[nextkey]:
+            raise Exception('not enough points after treatpoint')
+
+    x = np.array(np.loadtxt(path)[startpoint:endpoint])
+    baseline = np.mean(x[0:prepoints])
+    #print(len(x))
+    #print(baseline)
+    x_norm = x/baseline
+    return({'array_ori':x, 'array_norm':x_norm, 'baseline':baseline})
 
 
 # ================================================================================
@@ -140,7 +217,7 @@ def singleneuron_array_analysis(array, baseline, ci, **kwargs):
         if baseline != 0:
             result['magnification'] = np.sum((array * array_final) / baseline)/result['duration']
         else:
-            result['magnification'] = (array * array_final) / kwargs['alter_baseline']
+            result['magnification'] = np.sum((array * array_final) / kwargs['alter_baseline'])/result['duration']
     else:
         result['delay'] = np.nan#None
         result['duration'] = np.nan#None
@@ -301,6 +378,7 @@ def singleneuron_analysis(df):
 # ========================================================================================================================================
 # Exp class build a class for a electrophysiology experiment. It should include information like animal, date, path where save the data, 
 # animal treatment, and the experiment data 
+# Different to Result class, Exp class is mainly to input the exp info. but Result class is to analyse the data.
 # ========================================================================================================================================
 # ========================================================================================================================================        
 class Experiment():
@@ -516,3 +594,71 @@ class Experiment():
         print(treat_point)
 
     
+# ================================================================================================
+# == Result class ================================================================================
+# ================================================================================================# 
+# Not ready yet
+class Result():
+    def __init__(self, type, df, feq):
+        self.type=type
+        self.df=df
+        self.feq = feq
+        self.result=None
+
+    def create_result(self):
+        return(1)
+    
+
+class Multiunit(Result):
+    # the whole part of this class is not ready yet.
+    def __init__(self, df, character):
+        """
+        df for Multiunit should be three columns df including: date, group, data.
+        The data of each row should be an array.
+        character is a dict 
+        """
+        super().__init__('multiunit', df, 1/character['bint'])
+        self.character = character
+        self.result=self.create_result()
+        
+    def create_result(self):
+        result = {}
+        peak_arrive_duration_array = np.array([])
+        
+        for i in range(len(self.df)):
+            tmp = self.csd_period_analysis(self.df.loc[i, 'data'], self.character)
+            # no need to calculate baseline, it's already normed
+            peak_arrive_duration_array = np.append(peak_arrive_duration_array, tmp['peakpoint'])
+            
+        result['peak_arrive_duration'] = build_ttest_character(peak_arrive_duration_array)
+        return(result)
+        
+    def csd_period_analysis(self, array, character_dict):
+        # array is the raw data containing baseline and response period
+
+        # character_dict is the dict containing informations including:
+        # -- baseline length
+        # -- estimated impossible duration after CSD. When measure the peak, this period will be ignored in case some super active noise happened.
+        # -- analyse duration after peak. Define how long after peak will be analysed.
+        # -- estimated CSD end timepoint after pinprick. The max timepoint of which CSD peak will be sure past the view, like 300 sec after pinprick.
+        #array = signal.savgol_filter(array, window_length = 5, polyorder = 3)
+
+        # post_peak_response is from peak point to the duration of we want to analysis
+        # whole_timecourse is the whole duration from we wanted prepeak length to the after peak analysis length.
+
+        bint = character_dict.get('bint', 1)
+
+        tmpstart = character_dict['baseline_length'] + character_dict['estimated_impossible_duration']
+        tmpend = character_dict['baseline_length'] + character_dict['estimated_csd_end_timepoint']
+        peakpoint = np.argmax(array[tmpstart:tmpend]) + tmpstart
+        after_peak_array = array[peakpoint+1+character_dict['analyse_duration_after_peak'][0]:peakpoint+1+character_dict['analyse_duration_after_peak'][1]]
+        analysis_array = smooth(ay.bint1D(after_peak_array, bint))#, window_length = 5, polyorder = 3)
+        result = {}
+        result['peakpoint'] = peakpoint
+        result['post_peak_response'] = analysis_array
+
+        timecourse_start = peakpoint - character_dict['prepeak_length']
+        timecourse_end = peakpoint + character_dict['analyse_duration_after_peak'][1]
+        # print(peakpoint, timecourse_start, timecourse_end)
+        result['whole_timecourse'] = smooth(ay.bint1D(array[timecourse_start: timecourse_end], bint))
+        return(result)

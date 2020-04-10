@@ -23,3 +23,6 @@ Functions and class to manage nb table in database.
 ## transgenic
 The files in this folder is used to manage the transgenic animal colony.
 
+
+# ep
+To extract animal list for specific ep experiment, you first need to run 'get_exp_animal_list', then by using different filter function to filt out the proper list.
