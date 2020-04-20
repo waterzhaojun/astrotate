@@ -112,17 +112,7 @@ def get_exp_animal_list(tb_name):
     engine.dispose()
     return(df)
 
-def extract_array_from_infodf(infodf, fn, paradict = None):
-    # infodf may have many columns, but the following columns is necessary: id, group, data
-    tmpdf = infodf.loc[:,'data'].map(lambda x: fn(x, paradict))
-    for i in range(len(tmpdf)):
-        tmp = np.reshape(tmpdf[i], [1,-1])
-        if i == 0:
-            array = tmp
-        else:
-            array = np.concatenate((array, tmp), axis = 0)
-    
-    return(array)
+
 
 
 def get_method_key(treatdic, method, nth_key=0, **kwargs):
@@ -175,6 +165,25 @@ def load_ep_data(path, treatpoint_dict, key, prepoints, postpoints):
     x_norm = x/baseline
     return({'array_ori':x, 'array_norm':x_norm, 'baseline':baseline})
 
+    
+# ===========================================================================================
+# ====== polt part ==========================================================================
+# ===========================================================================================
+def timecourse(array, ax, **kwargs):
+        
+    mean_array = np.mean(array, axis = 0)  
+    error_array = np.std(array, axis = 0)/np.shape(array)[0]
+    
+    marker = kwargs.get('marker', '.')
+    alpha = kwargs.get('alpha', 0.5)
+    color = kwargs.get('color', 'gray')
+    timecourse_xlabels = kwargs.get('xticks', np.arange(np.shape(array)[1]))
+
+    ax.errorbar(
+        timecourse_xlabels, mean_array, yerr=error_array, alpha = alpha, color = color,
+        marker = marker, ms=1
+    )#, fmt='|')
+    
 
 # ================================================================================
 # analyse part ========================================================================
@@ -184,46 +193,6 @@ def load_ep_data(path, treatpoint_dict, key, prepoints, postpoints):
 # 1. use decode_singleneuron_xxxx function to analyse the data you extracted from database.
 # 2. use singleneuron_analysis function to transfer the df to a dict containing all comparisons.
 
-def singleneuron_array_analysis(array, baseline, ci, **kwargs):
-    """
-    This function is used to analyse whether the response period have increased activity by 
-    giving the response array.
-
-    The array should be only response period. No baseline required. 
-    The length of the array should be what you want to analyse.
-    baseline and ci are for baseline period.
-    If you need to define the activation/sensitization should happen in some range like 1h, 
-    you can use kwargs basic_range, set a number like 4 to test if it happen in first 4 numbers.
-    the activation / sensitization standard is baseline + ci
-    """
-    
-    array = np.array(array)
-    array1 = array > (baseline + ci)
-    array2 = np.append([0], array1[:-1])
-    array3 = np.append(array1[1:], [array1[-1]*array1[-2]])
-    array_final = ((array1 * array2 + array1 * array3) > 0) *1
-    
-    result = {'immediate': array[0]>baseline+ci,
-              'longterm_activation': np.sum(array_final) > 0
-             }
-    
-    if 'basic_range' in kwargs.keys():
-        test_period = array_final[0:kwargs['basic_range']]
-        result['longterm_activation'] = np.sum(test_period) > 0
-        
-    if result['longterm_activation']:
-        result['delay'] = np.where(array_final == 1)[0][0]
-        result['duration'] = np.sum(array_final)
-        if baseline != 0:
-            result['magnification'] = np.sum((array * array_final) / baseline)/result['duration']
-        else:
-            result['magnification'] = np.sum((array * array_final) / kwargs['alter_baseline'])/result['duration']
-    else:
-        result['delay'] = np.nan#None
-        result['duration'] = np.nan#None
-        result['magnification'] = np.nan#None
-    
-    return(result)
     
     
 
@@ -599,66 +568,28 @@ class Experiment():
 # ================================================================================================# 
 # Not ready yet
 class Result():
-    def __init__(self, type, df, feq):
-        self.type=type
-        self.df=df
-        self.feq = feq
-        self.result=None
+    def __init__(self, type, querydf):
+        self.type = type
+        self.querydf = querydf.reset_index(drop=True)
+        self.animalid = self.querydf.animalid.values
+        tmp = list(set(self.querydf.group.values))
+        if len(tmp) != 1:
+            raise Exception('This class suppose the querydf contains only one group data. Please check it.')
+        else:
+            self.group = tmp[0]
+        #self.feq = feq
+        #self.result = None
 
     def create_result(self):
         return(1)
     
-
-class Multiunit(Result):
-    # the whole part of this class is not ready yet.
-    def __init__(self, df, character):
-        """
-        df for Multiunit should be three columns df including: date, group, data.
-        The data of each row should be an array.
-        character is a dict 
-        """
-        super().__init__('multiunit', df, 1/character['bint'])
-        self.character = character
-        self.result=self.create_result()
-        
-    def create_result(self):
-        result = {}
-        peak_arrive_duration_array = np.array([])
-        
-        for i in range(len(self.df)):
-            tmp = self.csd_period_analysis(self.df.loc[i, 'data'], self.character)
-            # no need to calculate baseline, it's already normed
-            peak_arrive_duration_array = np.append(peak_arrive_duration_array, tmp['peakpoint'])
-            
-        result['peak_arrive_duration'] = build_ttest_character(peak_arrive_duration_array)
-        return(result)
-        
-    def csd_period_analysis(self, array, character_dict):
-        # array is the raw data containing baseline and response period
-
-        # character_dict is the dict containing informations including:
-        # -- baseline length
-        # -- estimated impossible duration after CSD. When measure the peak, this period will be ignored in case some super active noise happened.
-        # -- analyse duration after peak. Define how long after peak will be analysed.
-        # -- estimated CSD end timepoint after pinprick. The max timepoint of which CSD peak will be sure past the view, like 300 sec after pinprick.
-        #array = signal.savgol_filter(array, window_length = 5, polyorder = 3)
-
-        # post_peak_response is from peak point to the duration of we want to analysis
-        # whole_timecourse is the whole duration from we wanted prepeak length to the after peak analysis length.
-
-        bint = character_dict.get('bint', 1)
-
-        tmpstart = character_dict['baseline_length'] + character_dict['estimated_impossible_duration']
-        tmpend = character_dict['baseline_length'] + character_dict['estimated_csd_end_timepoint']
-        peakpoint = np.argmax(array[tmpstart:tmpend]) + tmpstart
-        after_peak_array = array[peakpoint+1+character_dict['analyse_duration_after_peak'][0]:peakpoint+1+character_dict['analyse_duration_after_peak'][1]]
-        analysis_array = smooth(ay.bint1D(after_peak_array, bint))#, window_length = 5, polyorder = 3)
-        result = {}
-        result['peakpoint'] = peakpoint
-        result['post_peak_response'] = analysis_array
-
-        timecourse_start = peakpoint - character_dict['prepeak_length']
-        timecourse_end = peakpoint + character_dict['analyse_duration_after_peak'][1]
-        # print(peakpoint, timecourse_start, timecourse_end)
-        result['whole_timecourse'] = smooth(ay.bint1D(array[timecourse_start: timecourse_end], bint))
-        return(result)
+    def extract_array_from_infodf(self, fn, paradict = None):
+        # infodf may have many columns, but the following columns is necessary: id, group, data
+        tmpdf = self.querydf.loc[:,'data'].map(lambda x: fn(x, paradict))
+        for i in range(len(tmpdf)):
+            tmp = np.reshape(tmpdf[i], [1,-1])
+            if i == 0:
+                array = tmp
+            else:
+                array = np.concatenate((array, tmp), axis = 0)
+        return(array)
