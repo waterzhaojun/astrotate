@@ -157,13 +157,21 @@ def load_ep_data(path, treatpoint_dict, key, prepoints, postpoints):
     if nextkey in treatpoint_dict.keys():
         if endpoint > treatpoint_dict[nextkey]:
             raise Exception('not enough points after treatpoint')
-
-    x = np.array(np.loadtxt(path)[startpoint:endpoint])
-    baseline = np.mean(x[0:prepoints])
-    #print(len(x))
-    #print(baseline)
-    x_norm = x/baseline
-    return({'array_ori':x, 'array_norm':x_norm, 'baseline':baseline})
+    
+    data = np.loadtxt(path, delimiter = ',')
+    if len(np.shape(data)) == 1:
+        x = np.array(data[startpoint:endpoint])
+        baseline = np.mean(x[0:prepoints])
+        x_norm = x/baseline
+    elif len(np.shape(data)) == 2:
+        x = np.array(data[startpoint:endpoint,:])
+        baseline = np.mean(x[0:prepoints], axis = 0)
+        x_norm = x/baseline
+    
+    if prepoints == 0:
+        return({'array_ori':x})
+    else:
+        return({'array_ori':x, 'array_norm':x_norm, 'baseline':baseline})
 
     
 # ===========================================================================================
