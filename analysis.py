@@ -5,6 +5,21 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 from matplotlib.markers import TICKDOWN
 
+def build_df_from_res_arrays(res_arrays,key,group_titles):
+    """
+    Sometimes a df need to use for analysis or sns plot. So this function is to create a df
+    from res dict by giving key.
+    So far I just tested float numbers, didn't test for chi square needed numbers.
+    """
+    df = pd.DataFrame(columns = ['group','value'])
+    for i in range(len(res_arrays)):
+        tmpre = res_arrays[i]
+        tmplen = len(tmpre[key]['array'])
+        df = pd.concat([df,pd.DataFrame(data={'group':[group_titles[i]]*tmplen,
+                                             'value':tmpre[key]['array']
+                                            })],axis = 0)
+    return(df)
+
 def paired_analysis_idx(array_length):
     """
     This function is to grap two element from an array in each round. 
@@ -153,7 +168,7 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, s
         plt.savefig(savepath)
     plt.show()
 
-def analysis_between_groups_description(result_array, group_titles):
+def analysis_between_groups_description(result_array, group_titles, savepath):
     """
     These function is to describe the comparison between groups.
     use Mann–Whitney U test for mean and std comparison.
@@ -169,36 +184,37 @@ def analysis_between_groups_description(result_array, group_titles):
     paired_compair = paired_analysis_idx(len(result_array))[0]
     
     keys = list(result_array[0].keys())
-    for k in keys:
-        for pair in paired_compair:
-            datatype = result_array[pair[0]][k]['dataType']
-            if datatype == 'avgStd':
-                try:
-                    aou, p = stats.mannwhitneyu(np.array(result_array[pair[0]][k]['array']).astype(float), 
-                                                np.array(result_array[pair[1]][k]['array']).astype(float))
-                    print('=======================================')
-                    print('%s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
-                                                                        result_array[pair[0]][k]['mean'], result_array[pair[0]][k]['sterr'],result_array[pair[0]][k]['n'],
-                                                                        result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'],
-                                                                        p, aou))
-                except:
-                    pass
-                    #print('=======================================')
-                    #print('%s (%s vs %s): This comparison has problem. Please check the data')
-            elif datatype == 'population':
-                try:
-                    aou, p = stats.fisher_exact([[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
-                                                 [result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['neg']]
-                                                 ])
-                    print('=======================================')
-                    print('%s (%s vs %s): \n%d of %d vs %d of %d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
-                                                                        result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['n'],
-                                                                        result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'],
-                                                                        p, aou))
-                except:
-                    pass
-                    #print('========================================')
-                    #print('%s (%s vs %s): This comparison has problem. Please check the data')
+    with open(savepath, 'w') as f:
+        for k in keys:
+            for pair in paired_compair:
+                datatype = result_array[pair[0]][k]['dataType']
+                if datatype == 'avgStd':
+                    try:
+                        aou, p = stats.mannwhitneyu(np.array(result_array[pair[0]][k]['array']).astype(float), 
+                                                    np.array(result_array[pair[1]][k]['array']).astype(float))
+                        print('=======================================', file=f)
+                        print('%s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                                                                            result_array[pair[0]][k]['mean'], result_array[pair[0]][k]['sterr'],result_array[pair[0]][k]['n'],
+                                                                            result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'],
+                                                                            p, aou),file=f)
+                    except:
+                        pass
+                        #print('=======================================')
+                        #print('%s (%s vs %s): This comparison has problem. Please check the data')
+                elif datatype == 'population':
+                    try:
+                        aou, p = stats.fisher_exact([[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
+                                                    [result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['neg']]
+                                                    ])
+                        print('=======================================',file=f)
+                        print('%s (%s vs %s): \n%d of %d vs %d of %d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                                                                            result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['n'],
+                                                                            result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'],
+                                                                            p, aou),file=f)
+                    except:
+                        pass
+                        #print('========================================')
+                        #print('%s (%s vs %s): This comparison has problem. Please check the data')
                                     
 #============================================================================================================
 # description methods ==============================================================================================
