@@ -1,13 +1,14 @@
 import os
 import pandas as pd
 import numpy as np
-from astrotate import array, utils, treatment, config as cg, analysis, server
+from .. import array, utils, treatment, config as cg, analysis, server
 import json
 from datetime import datetime
-# import h5py
+import h5py
 from pathlib import Path
 import math
 from scipy.io import loadmat
+#from oasis.functions import deconvolve
 
 
 objective = {'Nikon': ['X16']}
@@ -31,6 +32,8 @@ Right now I have two analysis method finished building code: AQuA, CSD.
 def folder_format(animalid, date, run):
     out = str(date) + '_' + animalid + '_run' + str(run)
     return(out)
+
+
 
 # csd analysis part =========================================================
 def readCsdData(path):

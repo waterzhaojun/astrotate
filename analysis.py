@@ -4,7 +4,20 @@ import math
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 from matplotlib.markers import TICKDOWN
+from matplotlib.ticker import PercentFormatter
+from datetime import datetime
+import os
+import pdfkit
+import seaborn as sns
 
+
+def check_df_group_num(df):
+    lss = list(set(df.group))
+    lss.sort()
+    for i in lss:
+        tmp = df.query('group == @i')
+        print('%s number = %d' % (i,len(tmp)))
+    
 def build_df_from_res_arrays(res_arrays,key,group_titles):
     """
     Sometimes a df need to use for analysis or sns plot. So this function is to create a df
@@ -43,6 +56,14 @@ def paired_analysis_idx(array_length):
                 tail = tmphead+gap
             levelflag = min(levelflag + 1, level[-1]+1)
     return(pair, level)
+    
+def paired_analysis_idx_with_control(array_length, control_idx):
+    result = []
+    all_idx = np.arange(array_length).astype(int)
+    all_idx = np.delete(all_idx, control_idx)
+    for i in all_idx:
+        result.append([control_idx, i])
+    return(result)
 
 def group_value_to_dict_element(array):
     # since now have build_ttest_character, better not use this function
@@ -168,7 +189,8 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, s
         plt.savefig(savepath)
     plt.show()
 
-def analysis_between_groups_description(result_array, group_titles, savepath):
+def analysis_between_groups_description_old(result_array, group_titles, savepath):
+    # deprecated
     """
     These function is to describe the comparison between groups.
     use Mann–Whitney U test for mean and std comparison.
@@ -215,7 +237,67 @@ def analysis_between_groups_description(result_array, group_titles, savepath):
                         pass
                         #print('========================================')
                         #print('%s (%s vs %s): This comparison has problem. Please check the data')
-                                    
+
+def analysis_between_groups_description(result_array,group_titles,savepath,title,**kwargs):    
+    html =  "<html>\n<head></head>\n<style>p { margin: 0 !important; }</style>\n<body>\n"
+
+    #title = "Single neuron activation sensitization analysis"
+    html += '\n<center><h1>' + title + '</h1></center>\n'
+    html += '\n<center>Last update: ' + datetime.today().strftime('%B-%d-%Y') + '</center>\n'
+    
+    if kwargs.get('control',False):
+        control_idx = result_array.index(kwargs['control'])
+        paired_compair=paired_analysis_idx_with_control(len(result_array), control_idx)
+    else:
+        paired_compair = paired_analysis_idx(len(result_array))[0]
+    keys = list(result_array[0].keys())
+    #if os.path.exists(savepath):
+    #    print('overwrite old analysis file...')
+    #    os.remove(savepath)
+    tmpsavepath = savepath[0:-3]+'html'
+    with open(tmpsavepath, 'a+') as f:
+        f.write(html)
+        for k in keys:
+            for pair in paired_compair:
+                datatype = result_array[pair[0]][k]['dataType']
+                if datatype == 'avgStd':
+                    try:
+                        aou, p = stats.mannwhitneyu(np.array(result_array[pair[0]][k]['array']).astype(float), 
+                                                    np.array(result_array[pair[1]][k]['array']).astype(float))
+                        #print('=======================================', file=f)
+                        f.write('<p>=============================================')
+                        tmp = '%s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                                                                            result_array[pair[0]][k]['mean'], result_array[pair[0]][k]['sterr'],result_array[pair[0]][k]['n'],
+                                                                            result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'],
+                                                                            p, aou)
+                        if p < 0.05:
+                            tmp = '<font color="red"><b>' + tmp + '</b></font>'
+                        f.write('<p>'+tmp)
+                    except:
+                        pass
+                        
+                elif datatype == 'population':
+                    try:
+                        aou, p = stats.fisher_exact([[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
+                                                    [result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['neg']]
+                                                    ])
+                        f.write('<p>=============================================')
+                        tmp = '%s (%s vs %s): \n%d of %d vs %d of %d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                                                                            result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['n'],
+                                                                            result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'],
+                                                                            p, aou)
+                        if p < 0.05:
+                            tmp = '<font color="red"><b>' + tmp + '</b></font>'
+                        f.write('<p>'+tmp)
+                    except:
+                        pass
+                        
+
+        f.write("\n</body>\n</html>")   
+    pdfkit.from_file(tmpsavepath, savepath)
+    os.remove(tmpsavepath)
+
+
 #============================================================================================================
 # description methods ==============================================================================================
 #============================================================================================================
@@ -328,8 +410,92 @@ def ax_3dscatter(ax, result_arrays, title, group_titles):
     ax.legend(group_titles)
     ax.set_title(title)
 
-def ax_hist2d(ax, result_arrays, title, group_titles):
-    pass
+def ax_boxplot(ax, result_arrays, title, group_title, show_marker = True, **kwargs):
+    """
+    This function is used to plot boxplot and scatter plot. It use matplotlib functions to do this
+    instead of seaborn function.
+    """
+    N = len(result_arrays)
+    width = 0.8
+    h = np.max([np.max(x) for x in result_arrays])
+    #markers = ['o','s','^']
+    marker_size = kwargs.get('marker_size', 120)
+    fontsize = kwargs.get('fontsize',20)
+
+    for i in range(N):
+        b = ax.boxplot(result_arrays[i],positions = [i],widths=width,showfliers=False)
+        b = [item.get_ydata()[1] for item in b['whiskers']]
+        
+        if show_marker:
+            x = np.random.normal(i, width/8, len(result_arrays[i]))
+            plt.scatter(x,result_arrays[i], 
+                        #marker=markers[i], 
+                        alpha = 0.5, s = marker_size)
+        if i > 0:
+            aou, p = stats.mannwhitneyu(result_arrays[0], result_arrays[i])
+            ax.text(i,b[1]+h*0.05,'p=%.03f'%p,horizontalalignment='center',fontsize=int(fontsize*0.8))
+        
+        
+    ax.set_xticklabels(group_title)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.tick_params(length=0)
+    ax.tick_params(axis='x', labelsize=fontsize)
+    ax.tick_params(axis='y', labelsize=fontsize)
+    if 'ylabel' in kwargs.keys():
+        ax.set_ylabel(kwargs['ylabel'], fontsize = fontsize)
+
+def ax_ratebar(ax,result_arrays,title,group_title,**kwargs):
+    # result_arrays is an array, each element is a [pos num, neg num] in each group
+    
+    N = len(result_arrays)
+    pos_array = np.array([x[0]/(x[0]+x[1]) for x in result_arrays])
+    neg_array = 1-pos_array
+    
+    width = 0.75
+    fontsize = kwargs.get('fontsize',20)
+
+    ax.bar(np.arange(N), np.ones(N), width=width,color='gray')
+    ax.bar(np.arange(N), pos_array, width=width, bottom=neg_array,color='r')
+    ax.set_xticks(np.arange(N))
+    ax.set_xticklabels(group_title, fontsize=fontsize)
+    ax.set_yticks([0,0.5,1])
+    #ax.set_ylim([0,1])
+    ax.tick_params(axis='x', labelsize=fontsize)
+    ax.tick_params(axis='y', labelsize=fontsize)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.yaxis.set_major_formatter(PercentFormatter(1))
+    
+    text_array=[]
+    for i in range(len(result_arrays)):
+        tmp = '{}/{}\n{:.1%}'.format(
+            result_arrays[i,0],
+            result_arrays[i,0]+result_arrays[i,1],
+            result_arrays[i,0]/(result_arrays[i,0]+result_arrays[i,1])
+        )
+        ax.text(i,neg_array[i]+pos_array[i]/2,tmp,
+            horizontalalignment='center',va='center',
+            fontsize=width*20,color='white',fontweight='bold'
+        )
+        if i>0:
+            aou, p = stats.fisher_exact([result_arrays[0,:], result_arrays[i,:]])
+            ptext = 'p={:.3f}'.format(p)
+            ylevel = 1.03+(i-1)*0.07
+            ax.annotate(
+                ptext, xy=(i/2,ylevel+0.03), 
+                zorder=10, ha = 'center', va = 'center', 
+                #backgroundcolor='w',
+                fontsize=fontsize*0.7
+            )
+            ax.plot(
+                [0, i], [ylevel, ylevel],'-',
+                lw=2,color = 'grey', 
+                marker = TICKDOWN,markersize = 2
+            )
+        
 
 def ax_polarbar(ax, result_arrays, title, group_title):
     arr = [x['percentage'] for x in result_arrays]
@@ -360,6 +526,52 @@ def ax_polarbar(ax, result_arrays, title, group_title):
                 horizontalalignment='center',
                 verticalalignment='center')
 
+def ax_swarmplot(ax,result_arrays,title,group_titles,**kwargs):
+    # result_obj_array is res_dict array.
+    df = pd.DataFrame(columns = ['group','value'])
+    control_res = result_arrays[0]
+    for i in range(len(result_arrays)):
+        tmpre = result_arrays[i]
+        tmplen = len(tmpre)
+        df = pd.concat([df,pd.DataFrame(data={'group':[group_titles[i]]*tmplen,
+                                             'value':tmpre
+                                            })],axis = 0)
+        
+    h = np.max(df.value.values)
+    df.reset_index(inplace=True,drop=True)
+    sns.boxplot(x="group", y="value", data=df,color='white',ax=ax,showfliers=False)
+    plt.setp(ax.artists, edgecolor = 'black', facecolor='w')
+    plt.setp(ax.lines, color='black')
+    for i,artist in enumerate(ax.artists):
+        ax.lines[i*5+4].set_color('orange')
+        
+        if i > 0:
+            tmpre = result_arrays[i]
+            aou, p = stats.mannwhitneyu(control_res, tmpre)
+            b = np.quantile(tmpre,0.75)
+            ax.text(i,b + h*0.05,'p=%.03f'%p,horizontalalignment='center')
+    
+    #marker_size = kwargs.get('marker_size', 10)
+
+    sns.swarmplot(x='group',y='value',data=df,
+        s=kwargs.get('marker_size', 10),
+        #alpha=kwargs.get('alpha', 0.5),
+        ax=ax,
+        **kwargs)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.set_xlabel('')
+    if kwargs.get('ylabel', False):
+        ax.set_ylabel(kwargs['ylabel'])
 
 
 
+
+class Result():
+    def __init__(self,df, group_title):
+        self.df = df
+        self.group = group_title
+        # self.result = self.analyze() 
+
+    def analyze(self):
+        return(None)

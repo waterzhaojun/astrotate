@@ -8,3 +8,5 @@ transgenic/config.json
 lib/
 config.yml
 .pyc
+packages/
+backup/
