@@ -63,6 +63,11 @@ def readRoiData(path, standard, window_size, **kwargs):
     """
     align_baseline: Sometimes like CSD I need to align the baseline timecourse based on the peak. This is not
     a best way but can temperally solve the problem. Set it to true for CSD trial.
+    
+    align_range: if you do align the baseline by rising peak, you need to set this parameter to tell the range
+    to search the peak around background rising peak. The default value is 60 as I think definitly csd will 
+    cross the whole area in 4sec.
+    
     """
 
     f = h5py.File(path)
@@ -86,7 +91,7 @@ def readRoiData(path, standard, window_size, **kwargs):
         tmp.loc[0,'type'] = f[f['roivalues'].__getitem__('type')[()][i,0]][()].tobytes()[::2].decode()
         if kwargs.get('align_baseline', False):
             tmparray = np.transpose(f[f['roivalues'].__getitem__('rawsignal')[()][i,0]]).flatten()
-            tmp_peak_range = kwargs.get('align_range', 60)
+            tmp_peak_range = kwargs.get('align_range', 60) 
             tmparray_risingpeak = tmparray[background_risingpeak_idx-tmp_peak_range:background_risingpeak_idx+tmp_peak_range]
             tmpgap = np.argmax(tmparray_risingpeak[1:]-tmparray_risingpeak[:-1]) + 1 - tmp_peak_range
             print('No.%d roi adjusted %d timepoints' % (i,tmpgap))
@@ -209,6 +214,7 @@ class Result_csdtrial(analysis.Result):
     def trialid(self,path):
         """
         This path is the folder path of the result.
+        Based on the path, this function translate it to trial's id and filepath
         """
         filepath = os.path.join(path, 'result.mat')
         run = os.path.basename(path).split('_')[0]

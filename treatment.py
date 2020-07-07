@@ -139,7 +139,14 @@ class Treatment():
 
     def toDict(self):
         a= copy.copy(self.__dict__)
+        orikeys = a.keys()
         del a['__title__']
+        for key,value in a['parameters'].items():
+            if key not in orikeys:
+                a[key] = value
+            else:
+                raise Exception('repeated key, please confirm the treatment class')
+        del a['parameters']
         return(a)
 
 class Sham(Treatment):
@@ -266,7 +273,7 @@ class Drug(Treatment):
             if tmp == '':
                 tmp = '0'
             self.parameters['recovery'] = tmp+'min'
-            tmp = input('Wash solution. Press ENTER to consider it as normal SIF wash and ignore this input. Input 0 for same solution as activate drug solution. Input the specific name if it is a special wash method.')
+            tmp = input('Wash solution. Press ENTER to consider it as normal SIF wash and ignore this input. Input 0 for same solution as activate drug solution. Note if there is no special activate drug solution, this choice will raise error. Input the specific name if it is a special wash method.')
             if tmp == '':
                 pass
             elif tmp == '0':

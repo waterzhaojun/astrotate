@@ -32,6 +32,16 @@ def bint1Dnan(array, binsize, setint = False):
         array2 = np.around(array2).astype(int)
     return(array2)
 
+def bint1Dmedian(array, binsize):
+    # smooth 1D array by using median
+    remains = len(array) % binsize
+    array1 = np.reshape(array[0:len(array)-remains], [-1, binsize])
+    array2 = np.median(array1, axis = 1)
+    if remains > binsize/2:
+        array2 = np.append(array2, np.median(array[-remains:]))
+    
+    return(array2)
+
 def conf(array,z = 0.96):
     mean = np.mean(array)
     n = len(array)

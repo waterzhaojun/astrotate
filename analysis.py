@@ -189,65 +189,34 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, s
         plt.savefig(savepath)
     plt.show()
 
-def analysis_between_groups_description_old(result_array, group_titles, savepath):
-    # deprecated
-    """
-    These function is to describe the comparison between groups.
-    use Mann–Whitney U test for mean and std comparison.
-    use fisher for population comparison.
-    """
-    def __intersection__(lists): 
-        lst1 = lists[0]
-        for i in range(1, len(lists)):
-            tmplst = lists[i]
-            lst1 = list(set(lst1) & set(tmplst))
-        return(lst1)
 
-    paired_compair = paired_analysis_idx(len(result_array))[0]
-    
-    keys = list(result_array[0].keys())
-    with open(savepath, 'w') as f:
-        for k in keys:
-            for pair in paired_compair:
-                datatype = result_array[pair[0]][k]['dataType']
-                if datatype == 'avgStd':
-                    try:
-                        aou, p = stats.mannwhitneyu(np.array(result_array[pair[0]][k]['array']).astype(float), 
-                                                    np.array(result_array[pair[1]][k]['array']).astype(float))
-                        print('=======================================', file=f)
-                        print('%s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
-                                                                            result_array[pair[0]][k]['mean'], result_array[pair[0]][k]['sterr'],result_array[pair[0]][k]['n'],
-                                                                            result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'],
-                                                                            p, aou),file=f)
-                    except:
-                        pass
-                        #print('=======================================')
-                        #print('%s (%s vs %s): This comparison has problem. Please check the data')
-                elif datatype == 'population':
-                    try:
-                        aou, p = stats.fisher_exact([[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
-                                                    [result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['neg']]
-                                                    ])
-                        print('=======================================',file=f)
-                        print('%s (%s vs %s): \n%d of %d vs %d of %d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
-                                                                            result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['n'],
-                                                                            result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'],
-                                                                            p, aou),file=f)
-                    except:
-                        pass
-                        #print('========================================')
-                        #print('%s (%s vs %s): This comparison has problem. Please check the data')
 
-def analysis_between_groups_description(result_array,group_titles,savepath,title,**kwargs):    
+def analysis_between_groups_description(result_array,group_titles,savepath,title,**kwargs):   
+    """
+    This function is to create a pdf showing multiple result dict comparing result.
+    The default value compare method is mannwhitney u test. You can change it by setting value_compare_method.
+    The default population compare method is fisher exact. You can change it by setting population_compare_method.
+    """
+    value_compare_method = kwargs.get('value_compare_method', stats.mannwhitneyu)
+    value_compare = lambda array, fn:fn(array[0],array[1])
+    population_compare_method = kwargs.get('population_compare_method', stats.fisher_exact)
+    population_compare = lambda array, fn:fn(array)
+
     html =  "<html>\n<head></head>\n<style>p { margin: 0 !important; }</style>\n<body>\n"
 
     #title = "Single neuron activation sensitization analysis"
     html += '\n<center><h1>' + title + '</h1></center>\n'
     html += '\n<center>Last update: ' + datetime.today().strftime('%B-%d-%Y') + '</center>\n'
+    html += '\n'
+    html += '<p>Note: In this report, the value comparison was measured by %s, the population comparison was measured by %s.' % (value_compare_method.__name__, population_compare_method.__name__)
+    html += '<p>'
+
+    if len(result_array) != len(group_titles):
+        raise Exception('result_array and group_titles should have same length.')
     
     if kwargs.get('control',False):
         control_idx = result_array.index(kwargs['control'])
-        paired_compair=paired_analysis_idx_with_control(len(result_array), control_idx)
+        paired_compair = paired_analysis_idx_with_control(len(result_array), control_idx)
     else:
         paired_compair = paired_analysis_idx(len(result_array))[0]
     keys = list(result_array[0].keys())
@@ -262,37 +231,52 @@ def analysis_between_groups_description(result_array,group_titles,savepath,title
                 datatype = result_array[pair[0]][k]['dataType']
                 if datatype == 'avgStd':
                     try:
-                        aou, p = stats.mannwhitneyu(np.array(result_array[pair[0]][k]['array']).astype(float), 
-                                                    np.array(result_array[pair[1]][k]['array']).astype(float))
-                        #print('=======================================', file=f)
+                        sta,p = value_compare(
+                            [np.array(result_array[pair[0]][k]['array']).astype(float), 
+                            np.array(result_array[pair[1]][k]['array']).astype(float)],
+                            value_compare_method
+                        )
                         f.write('<p>=============================================')
-                        tmp = '%s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                        tmp = '%s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d, pvalue=%f, statistic=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
                                                                             result_array[pair[0]][k]['mean'], result_array[pair[0]][k]['sterr'],result_array[pair[0]][k]['n'],
                                                                             result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'],
-                                                                            p, aou)
+                                                                            p, sta)
                         if p < 0.05:
                             tmp = '<font color="red"><b>' + tmp + '</b></font>'
                         f.write('<p>'+tmp)
                     except:
-                        pass
-                        
+                        f.write('<p>=============================================')
+                        tmp = 'There is en error when comparing %s (%s vs %s): \n%f+/-%f n=%d vs %f+/-%f n=%d. Please comfirm the value.' % (
+                            k, group_titles[pair[0]], group_titles[pair[1]], 
+                            result_array[pair[0]][k]['mean'], result_array[pair[0]][k]['sterr'], result_array[pair[0]][k]['n'],
+                            result_array[pair[1]][k]['mean'], result_array[pair[1]][k]['sterr'],result_array[pair[1]][k]['n'])
+                        tmp = '<font color="gray"><b>' + tmp + '</b></font>'
+                        f.write('<p>'+tmp)
+
                 elif datatype == 'population':
                     try:
-                        aou, p = stats.fisher_exact([[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
-                                                    [result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['neg']]
-                                                    ])
+                        sta, p = population_compare(
+                            [[result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['neg']], 
+                            [result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['neg']]],
+                            population_compare_method
+                        )
                         f.write('<p>=============================================')
-                        tmp = '%s (%s vs %s): \n%d of %d vs %d of %d, p=%f, aou=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
+                        tmp = '%s (%s vs %s): \n%d of %d vs %d of %d, p=%f, statistic=%f' % (k, group_titles[pair[0]], group_titles[pair[1]], 
                                                                             result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['n'],
                                                                             result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'],
-                                                                            p, aou)
+                                                                            p, sta)
                         if p < 0.05:
                             tmp = '<font color="red"><b>' + tmp + '</b></font>'
                         f.write('<p>'+tmp)
                     except:
-                        pass
+                        f.write('<p>=============================================')
+                        tmp = 'There is en error when comparing %s (%s vs %s): \n%d of %d vs %d of %d. Please comfirm the value.' % (
+                            k, group_titles[pair[0]], group_titles[pair[1]], 
+                            result_array[pair[0]][k]['pos'], result_array[pair[0]][k]['n'],
+                            result_array[pair[1]][k]['pos'], result_array[pair[1]][k]['n'])
+                        tmp = '<font color="gray"><b>' + tmp + '</b></font>'
+                        f.write('<p>'+tmp)
                         
-
         f.write("\n</body>\n</html>")   
     pdfkit.from_file(tmpsavepath, savepath)
     os.remove(tmpsavepath)

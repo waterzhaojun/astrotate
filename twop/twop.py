@@ -35,133 +35,6 @@ def folder_format(animalid, date, run):
 
 
 
-# csd analysis part =========================================================
-def readCsdData(path):
-    # The path refers to a folder named runx_CSD
-    # csd analysis data is supposed to save in a mat file.
-    resultpath = os.path.join(path,'result.mat')
-    run = os.path.basename(path).split('_')[0]
-    tmp = loadmat(resultpath)
-    df = pd.DataFrame(columns = ['csd_speed', 'A1_duration', 'C_duration', 'A2_duration'])
-    df.loc[0, 'csd_speed'] = tmp['speed'][0][0]
-    df.loc[0, 'A1_duration'] = tmp['A1_duration'][0][0]
-    df.loc[0, 'C_duration'] = tmp['C_duration'][0][0]
-    df.loc[0, 'A2_duration'] = tmp['A2_duration'][0][0]
-
-    a1resultpath = os.path.join(path,run+'_csdA1_AQuA', 'FeatureTable.xlsx')
-    a1result = readAquaData(a1resultpath)
-    a1result.columns = ['A1_'+x for x in a1result.columns]
-    
-    a2resultpath = os.path.join(path,run+'_csdA2_AQuA', 'FeatureTable.xlsx')
-    a2result = readAquaData(a2resultpath)
-    a2result.columns = ['A2_'+x for x in a2result.columns]
-    
-    cresultpath = os.path.join(path,run+'_csdC_AQuA', 'FeatureTable.xlsx')
-    cresult = readAquaData(cresultpath)
-    cresult.columns = ['C_'+x for x in cresult.columns]
-    return(df, a1result, a2result, cresult)
-
-def groupCsdData(pathlist):
-    res = {}
-    for i in range(len(pathlist)):
-        if i == 0:
-            df, a1, a2, c = readCsdData(pathlist[i])
-        else:
-            tmp = readCsdData(pathlist[i])
-            df = pd.concat([df, tmp[0]])
-            a1 = pd.concat([a1, tmp[1]])
-            a2 = pd.concat([a2, tmp[2]])
-            c = pd.concat([c, tmp[3]])
-    for k in df.columns:
-        try:
-            res[k] = analysis.group_value_to_dict_element(df.loc[:,k].values)
-            res[k]['analysis_method'] = ['box']
-            res[k]['dataType'] = 'avgStd'
-        except:
-            pass
-    for k in a1.columns:
-        try:
-            res[k] = analysis.group_value_to_dict_element(a1.loc[:,k].values)
-            res[k]['analysis_method'] = ['box']
-            res[k]['dataType'] = 'avgStd'
-        except:
-            pass
-    for k in a2.columns:
-        try:
-            res[k] = analysis.group_value_to_dict_element(a2.loc[:,k].values)
-            res[k]['analysis_method'] = ['box']
-            res[k]['dataType'] = 'avgStd'
-        except:
-            pass
-    for k in c.columns:
-        try:
-            res[k] = analysis.group_value_to_dict_element(c.loc[:,k].values)
-            res[k]['analysis_method'] = ['box']
-            res[k]['dataType'] = 'avgStd'
-        except:
-            pass
-    return(res)  
-
-# aqua analysis part ========================================================
-def readAquaData(path, drop_cols = ['Index']):
-    # This path is the folder path when output from AQuA.
-    # Now I will use the excel file as the source of the result.
-    # the result is a pandas dataframe
-    
-    tmp = pd.read_excel(path, 'Sheet1', header = None, index_col=None)
-    df = pd.DataFrame(columns = tmp.loc[:,0].values)
-    nrow = len(tmp.columns)
-    for i in range(nrow-1):
-        df.loc[i, :] = tmp.loc[:,i+1].values
-    if len(drop_cols) > 0:
-        df.drop(columns = drop_cols, inplace = True)
-    return(df)
-
-def groupAquaData(pathlist):
-    kickout_columns = ['Index'] # this list need manully change based on AQuA features.
-    res = {'n_of_events':{'array':np.array([])}}
-
-    if type(pathlist) in [list, np.ndarray]:
-        for i in range(len(pathlist)):
-            if i == 0:
-                df = readAquaData(pathlist[i])
-                res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(df))
-            else:
-                tmp = readAquaData(pathlist[i])
-                df = pd.concat([df, tmp])
-                res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(tmp))
-    elif type(pathlist) in [str]:
-        df = readAquaData(pathlist)
-        res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(df))
-            
-    res['n_of_events'] = analysis.group_value_to_dict_element(res['n_of_events']['array'])
-    res['n_of_events']['analysis_method'] = ['box']
-    res['n_of_events']['dataType'] = 'avgStd'
-    
-    res['event_character'] = {'character_columns': ['Basic - Area', 'Curve - Duration 50% to 50%', 'Curve - Max Dff']}
-    res['event_character']['array'] = df[res['event_character']['character_columns']].values.tolist()
-    res['event_character']['analysis_method'] = ['scatter']
-    res['event_character']['dataType'] = 'avgStd'
-
-    cname = df.columns
-    cname = [x for x in cname if x not in kickout_columns]
-    for i in cname:
-        try:
-            res[i] = analysis.group_value_to_dict_element(df.loc[:,i].values)
-            res[i]['analysis_method'] = ['box']
-            res[i]['dataType'] = 'avgStd'
-        except:
-            pass
-    return(res)
-
-
-def aquaStruct(foldername):
-    res = dict()
-    res['excel'] = os.path.join(foldername, 'FeatureTable.xlsx') 
-    res['mov'] = os.path.join(foldername, 'Movie.tif')
-    res['paras'] = os.path.join(foldername, 'aqua_parameters.yml')
-    return(res)
-
 # ===================================================================
 # query part 
 def get_data_list(datatype, analysis_method, **kwargs):
@@ -182,6 +55,28 @@ def get_data_list(datatype, analysis_method, **kwargs):
 
     return(record)
 
+def get_runpath(root, animalid, **kwargs):
+    """
+    This function is to get the folder path of certain data.
+    Provide only root, animalid, date will return the date path
+    You can set run=x to get folders have 'runx'.
+    You can set datatype = 'x' to get folders have x.
+    """
+    path = os.path.join(root, animalid)
+    if len(kwargs.keys()) > 0:
+        if 'date' in kwargs.keys():
+            path = os.path.join(path, date)
+        else:
+            path = [os.path.join(path,x) for x in os.listdir(path) if x[0] != '.'][0]
+        
+        files = [x for x in os.listdir(path) if x[0] != '.']
+        if 'run' in kwargs.keys():
+            run='run'+str(kwargs['run'])
+            files = [x for x in files if run in x]
+        if 'datatype' in kwargs.keys():
+            files = [x for x in files if kwargs['datatype'] in x]
+        path = [os.path.join(path, x) for x in files]
+    return(path)
 
 # =======================================================================================================================================================
 # =======================================================================================================================================================
