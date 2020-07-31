@@ -188,7 +188,8 @@ class Aavinject(Treatment):
         'AAV-PHP.S CA6.6PP',
         'AAV2/5.GFAP.hM3D(Gq).mCherry (do not use this one)',
         'AAV5.GFAP.hM3D(Gq).mCherry',
-        'pGP.AAV.syn.JGCaMP7s.WPRE'
+        'pGP.AAV.syn.JGCaMP7s.WPRE',
+        'AAV2/5-gfaABCD1-optoGq-EYFP'
     ]
 
     __inject_method_list__ = [

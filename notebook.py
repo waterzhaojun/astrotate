@@ -16,7 +16,7 @@ class Notebook():
             cur = conn.cursor()
             cur.execute(
             """
-            INSERT INTO projects_nb (path, description, title, author, main, type)
+            INSERT INTO projects_nb (path, description, title, authorid, main, type)
             VALUES ('{}', '{}', '{}', '{}', '{}', '{}')
             RETURNING pid
             """.format(self.path, self.description, self.title, self.author, self.main, self.type)

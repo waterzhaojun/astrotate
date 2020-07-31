@@ -57,39 +57,17 @@ class Exp(cg.Experiment):
             self.treatment = exp[3]
 
         conn.close()
-    def __init__(self, configpath = 'config.yml', primary = None, secondary = None):
-        configobj = config.Config(configpath)
-        super().__init__(configobj)
-        self.animalid = input('=== animal id ===/nIf it has surgery id, better use it instead of transgenic id/nInput animal id: ')
-        
-        tmp = input('=== Date ===/nThis date is when you make the slide/ndate: ')
-        self.date = utils.format_date(datetime.strptime(tmp, '%y%m%d').strftime('%m/%d/%Y'))
+    
 
-        self.microscope = utils.select('=== Which microscope are you using for these slides ===', ['8th floor', 'own lab'])
-        
-        if primary !=  None:
-            self.primary = primary.properties()
-        if secondary != None:
-            self.secondary = secondary.properties()
-
-        self.animalfolder = os.path.join(self.mainfolder, animalid)
-        if not os.path.exists(self.animalfolder):
-            os.mkdir(self.animalfolder)
-
-        self.expfile = os.path.join(self.animalfolder, str(dateid)+'.json')
-        if not os.path.exists(self.expfile):
-            exp = {}
-            exp['project'] = utils.projectArrayInput(configobj)
-            exp['treatment'] = {}
-            exp['data'] = []
-            utils.writejson(self.expfile, exp)
-        self.loadExp()
-
-class Antibody():
+class Antibody(): # This class is good to use.
     def __init__(self):
         self.type = utils.select('=== antibody type ===', ['primary', 'secondary'])
         if self.type == 'primary':
-            primary_list = ['GFAP from mouse', 'DsRed from rabbit']
+            primary_list = [
+                'GFAP from mouse', 
+                'DsRed from rabbit', 
+                'c-fos from rabbit'
+            ]
             self.antibody = utils.select('=== which antibody ===', primary_list)
             
         elif self.type == 'secondary':
@@ -102,6 +80,12 @@ class Antibody():
             self.duration = 'overnight'
         else:
             self.duration = tmp
+        
+        self.temperature = utils.select('temperature: ', ['RT', '-4'])
 
     def to_dict(self):
-        return({'type':self.type, 'antibody':self.antibody, 'concentration':self.concentration, 'duration': self.duration})
+        return({
+            'type':self.type, 'antibody':self.antibody, 
+            'concentration':self.concentration, 'duration': self.duration,
+            'temperature':self.temperature
+        })
