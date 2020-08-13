@@ -115,6 +115,7 @@ def analysis_singleKey_between_groups(result_array, key, group_titles, savepath 
     """
     This function is to analyse the key between result array element
     """
+    # deprecated
     def __intersection__(lists): 
         lst1 = lists[0]
         for i in range(1, len(lists)):
@@ -138,11 +139,7 @@ def analysis_singleKey_between_groups(result_array, key, group_titles, savepath 
         plt.savefig(savepath)
     plt.show()
 
-def plot_singleKey_between_groups(result_array, key, anaFun):
-    """
-    This function is to plot the key between result array element
-    """
-    pass
+
 
 def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, savepath = None):
     """
@@ -151,6 +148,7 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, s
     will get a dict with same key words. This function is to plot along
     the keys to show different between groups. Right now it only tested two groups.
     """
+    # deprecated
     def __intersection__(lists): 
         lst1 = lists[0]
         for i in range(1, len(lists)):
@@ -189,7 +187,25 @@ def analysis_between_groups(result_array, group_titles, n_fig_of_each_row = 3, s
         plt.savefig(savepath)
     plt.show()
 
-
+def df2res(df, analyze_columns, analyze_method, key_name=None, **kwargs):
+    # analyze method is choose from either 'ttest' or 'chi'
+    # This is an important function. Updated at 8/12/2020.
+    assert len(analyze_columns) == len(analyze_method)
+    if key_name is not None:
+        assert len(analyze_columns) == len(key_name)
+        keys = key_name
+    else:
+        keys = analyze_columns
+    result = {}
+    for i in range(len(analyze_columns)):
+        if analyze_method[i] == 'ttest':
+            result[keys[i]] = analysis.build_ttest_character(df.loc[:,analyze_columns[i]].values)
+        elif analyze_method[i] == 'chi':
+            result[keys[i]] = analysis.build_chi_character(
+                df.loc[:,analyze_columns[i]].values,
+                posSymbol = kwargs.get('posSymbol', 'Y'),
+            )
+    return(result)
 
 def analysis_between_groups_description(result_array,group_titles,savepath,title,**kwargs):   
     """

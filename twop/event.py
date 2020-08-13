@@ -31,7 +31,14 @@ def groupAquaData(pathlist, **kwargs):
     I think the sorting method based on mag first, then duration, then size is a good stragety, so I set it as default.
 
     """
-    kickout_columns = ['Index'] # this list need manully change based on AQuA features.
+    def __formatid__(path):
+        l1 = os.path.basename(os.path.dirname(path)).split('_')[0]
+        l2 = os.path.basename(os.path.dirname(os.path.dirname(path)))
+        l3 = os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(path))))
+        return(l3 + '-' + l2 + '-' + l1)
+
+
+    kickout_columns = ['Index', 'trial', 'Curve - P Value on max Dff (-log10)', 'Curve - Decay tau'] # this list need manully change based on AQuA features.
     res = {'n_of_events':{'array':np.array([])}}
 
     if type(pathlist) in [str]:
@@ -41,9 +48,11 @@ def groupAquaData(pathlist, **kwargs):
     for i in range(len(pathlist)):
         if i == 0:
             df = readAquaData(pathlist[i])
+            df['trial'] = __formatid__(pathlist[i])
             res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(df))
         else:
             tmp = readAquaData(pathlist[i])
+            tmp['trial'] = __formatid__(pathlist[i])
             df = pd.concat([df, tmp])
             res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(tmp))
             

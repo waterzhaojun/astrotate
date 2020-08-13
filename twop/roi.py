@@ -11,6 +11,7 @@ import math
 from scipy.io import loadmat
 import copy
 from .signal_treatment import *
+from sklearn.cluster import KMeans
 
 # ROI analysis part =========================================================
 def analyze_neuron_deconvolve_signal(array):
