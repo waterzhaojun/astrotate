@@ -13,7 +13,7 @@ import json
 
 class Animal():
     def __init__(self, animalid):
-        self.__keys__ = ['animalid', 'species', 'strain', 'gender', 'transgenic_id', 'birthday', 'ear_punch', 'terminated', 'note']
+        self.__keys__ = ['animalid', 'species', 'strain', 'gender', 'transgenic_id', 'genotype', 'birthday', 'ear_punch', 'terminated', 'note']
         conn = server.connect_server()
         cur = conn.cursor()
         cur.execute(
@@ -56,6 +56,7 @@ class Animal():
                     self.birthday = utils.format_date(tmp)
                 else:
                     self.birthday = None
+                self.genotype = utils.select('Genotype: ', [])
                 self.ear_punch = utils.select('Ear punch when giving surgery. ', ['L', 'R', 'LR', 'none'])
 
             self.terminated = False

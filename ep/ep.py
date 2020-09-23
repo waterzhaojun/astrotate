@@ -46,6 +46,20 @@ def check_channel_name(exp_folder, trialNum = None):
     df = pd.read_csv(file, nrows = 1, sep = '\t').columns.values
     print(df)
     
+def create_treatment_df():
+    df = pd.DataFrame(columns = ['treatment_id', 'trial', 'sec'])
+    flag = True
+    while flag:
+        new = input('New treatment id (Press ENTER to stop add): ')
+        if new == '':
+            flag = False
+        else:
+            newlen = len(df)
+            df.loc[newlen, 'treatment_id'] = int(new)
+            df.loc[newlen, 'trial'] = input('new treatment trial: ')
+            df.loc[newlen, 'sec'] = int(input('new treatment sec: '))
+    return(df)
+
 def get_array(folderPath, startTrial, endTrial, channel, scanRate, outputRate, treatment_df, intvalue = False):
     
     treatment_df = treatment_df.astype({'trial': 'str'}) # after load from csv, the trial is int64

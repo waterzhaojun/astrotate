@@ -4,13 +4,13 @@ import os
 import getpass
 from sqlalchemy import create_engine
 
-def get_config(servername = 'elephantsql'):
+def get_config(servername = 'awslevylab'):
     path = os.path.join(os.path.dirname(__file__), 'lib', 'server_config.json')
     with open(path, 'r') as f:
         config = json.load(f)
     return(config)
 
-def server_engine(servername = 'elephantsql'):
+def server_engine(servername = 'awslevylab'):
     try:
         config = get_config()[servername]
         if config['password'] is None:
@@ -29,7 +29,7 @@ def server_engine(servername = 'elephantsql'):
     engine = create_engine('postgresql://'+config['user']+':'+config['password']+'@'+config['server']+':'+config['port']+'/'+config['database'],echo=False)
     return(engine)
 
-def connect_server(servername = 'elephantsql'):
+def connect_server(servername = 'awslevylab'):
     try:
         config = get_config()[servername]
         if config['password'] is None:

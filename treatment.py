@@ -189,7 +189,8 @@ class Aavinject(Treatment):
         'AAV2/5.GFAP.hM3D(Gq).mCherry (do not use this one)',
         'AAV5.GFAP.hM3D(Gq).mCherry',
         'pGP.AAV.syn.JGCaMP7s.WPRE',
-        'AAV2/5-gfaABCD1-optoGq-EYFP'
+        'AAV2/5-gfaABCD1-optoGq-EYFP',
+        'AAV9.CAG.flex.GCaMP5s.WPRE.SV40'
     ]
 
     __inject_method_list__ = [
@@ -198,7 +199,8 @@ class Aavinject(Treatment):
         'TG injection from ipsi lateral cortex', 
         'TG injection from nasal',
         'retro orbital injection', 
-        'apply topically'
+        'apply topically',
+        'iv injection'
     ]
 
     __inject_tool_list__ = [

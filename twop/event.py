@@ -30,8 +30,9 @@ def groupAquaData(pathlist, **kwargs):
     And set sort_columns to a list of column name like: sort_columns = ['Curve - Max Dff', 'Curve - Duration 50% to 50%', 'Basic - Area']
     I think the sorting method based on mag first, then duration, then size is a good stragety, so I set it as default.
 
+    If you want to give a costumize trial id, use kwargs trialid=['xxx', 'xxx', 'xxx', ...]
     """
-    def __formatid__(path):
+    def __formatid__(path, **kwargs):
         l1 = os.path.basename(os.path.dirname(path)).split('_')[0]
         l2 = os.path.basename(os.path.dirname(os.path.dirname(path)))
         l3 = os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(path))))
@@ -46,16 +47,21 @@ def groupAquaData(pathlist, **kwargs):
 
     # if type(pathlist) in [list, np.ndarray]:
     for i in range(len(pathlist)):
+        if 'trialid' in kwargs.keys():
+            tmpid = kwargs['trialid'][i]
+        else:
+            tmpid = __formatid__(pathlist[i])
+        
         if i == 0:
             df = readAquaData(pathlist[i])
-            df['trial'] = __formatid__(pathlist[i])
+            df['trial'] = tmpid
             res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(df))
         else:
             tmp = readAquaData(pathlist[i])
-            tmp['trial'] = __formatid__(pathlist[i])
+            tmp['trial'] = tmpid
             df = pd.concat([df, tmp])
             res['n_of_events']['array'] = np.append(res['n_of_events']['array'], len(tmp))
-            
+    df.reset_index(drop = True, inplace = True)
     res['n_of_events'] = analysis.group_value_to_dict_element(res['n_of_events']['array'])
     res['n_of_events']['analysis_method'] = ['box']
     res['n_of_events']['dataType'] = 'avgStd'
