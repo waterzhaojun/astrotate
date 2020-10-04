@@ -66,12 +66,19 @@ class Antibody(): # This class is good to use.
             primary_list = [
                 'GFAP from mouse', 
                 'DsRed from rabbit', 
-                'c-fos from rabbit'
+                'c-fos from rabbit',
+                'NeuN from mouse',
+                'GFP from chicken'
             ]
             self.antibody = utils.select('=== which antibody ===', primary_list)
             
         elif self.type == 'secondary':
-            secondary_list = ['488 Goat anti Mouse', '594 Goat anti Rabbit']
+            secondary_list = [
+                '488 Goat anti Mouse', 
+                '594 Goat anti Rabbit',
+                '594 Goat anti Mouse',
+                '488 Goat anti Chicken'
+            ]
             self.antibody = utils.select('=== which antibody ===', secondary_list)
         
         self.concentration = '1:'+input('=== antibody concentration ===/n1:xxx, just input the second number by int: ')
