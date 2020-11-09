@@ -49,6 +49,7 @@ def ihcstain():
     return(treat)
 
 def input_time(title, allow_none = True):
+    # depricated
     
     if allow_none:
         note = '=== %s treatment start time.===\nPress Enter to leave it blank. Input 1 for present time. Input HH:MM for certain time: ' % title
@@ -68,6 +69,7 @@ def input_time(title, allow_none = True):
     return(value)
 
 def input_date(title, allow_none = True):
+    # depricated
 
     if allow_none:
         note = '=== %s treatment start date.===\nPress Enter to ignore this.\nInput 1 for today.\nInput mm-dd-yyyy for detail date: ' % title
@@ -124,11 +126,32 @@ class Treatment():
         else:
             self.__title__ = title
 
-        self.time = input_time(self.__title__)
-        self.date = input_date(self.__title__)
+        self.input_time()
+        self.input_date()
         self.operator = utils.select('Treatment operator: ', cg.operator, 0)
         self.parameters = {}
         self.note = input('input your note for %s treatment: ' % self.method)
+
+    def input_time(self):
+        note = '=== %s treatment start time.===\nPress Enter to pass it. Input 1 for present time. Input HH:MM for certain time: ' % self.__title__
+        tmp = input(note)
+        if tmp == '1':
+            self.time = datetime.now().strftime('%H:%M')
+        elif tmp == '':
+            pass
+        else:
+            self.time = tmp
+
+    def input_date(self):
+        note = '=== %s treatment start date.===\nPress Enter to ignore this.\nInput 1 for today.\nInput mm-dd-yyyy for detail date: ' % self.__title__
+        tmp = input(note)
+        if tmp == '1':
+            self.date = utils.format_date(datetime.now().strftime('%m-%d-%Y'))
+        elif tmp == '':
+            pass
+        else:
+            self.date = utils.format_date(tmp)
+        
 
     def properties(self):
         props = [x for x in self.__dir__ if (not callable(x)) and x[0:2] != '__']
@@ -176,9 +199,31 @@ class Baseline(Treatment):
     def __init__(self):
         super().__init__('baseline')
 
-class Purfusion(Treatment):
+class Perfuse(Treatment):
     def __init__(self):
         super().__init__('PFA purfusion')
+
+class Lfp(Treatment):
+    def __init__(self):
+        super().__init__('lfp')
+        wiretype = [
+            'tungsten, Bare = 0.002 in, Coated = 0.004 in, Pruduct = A-M Systems 795500',
+            'silver, Bare = 0.005 in, Coated = NA, Pruduct = A-M Systems 781500'
+        ]
+        choosetype = utils.select('Choose wire type: ', wiretype, defaultChoose=0)
+        self.decodeWireType(choosetype) 
+
+    def decodeWireType(self, choosetype):
+        wt = choosetype.split(',')
+        self.parameters['wire_type']=wt[0]
+        for i in range(1,len(wt)):
+            tmp = wt[i].split('=')
+            tmpname = tmp[0].replace(' ', '')
+            tmpcontent = tmp[1].strip()
+            self.parameters[tmpname] = tmpcontent
+
+
+
 
 class Aavinject(Treatment):
     __aav_list__ = [
@@ -190,7 +235,9 @@ class Aavinject(Treatment):
         'AAV5.GFAP.hM3D(Gq).mCherry',
         'pGP.AAV.syn.JGCaMP7s.WPRE',
         'AAV2/5-gfaABCD1-optoGq-EYFP',
-        'AAV9.CAG.flex.GCaMP5s.WPRE.SV40'
+        'AAV9.CAG.flex.GCaMP5s.WPRE.SV40',
+        'PNS1.CAG.GCaMP6s',
+        'PNS1.CAG.DIO.GCaMP6s'
     ]
 
     __inject_method_list__ = [
@@ -212,7 +259,9 @@ class Aavinject(Treatment):
         super().__init__('virus inject')
         self.parameters['virus_id'] = utils.select('Choose virus: ', self.__aav_list__)
         self.parameters['inject_method'] = utils.select('Choose inject method: ', self.__inject_method_list__)
-        self.parameters['inject_dose'] = input('Input dose (ul). It is the total amount: ')+'ul'
+        self.parameters['inject_volumn'] = input('Input volumn (ul). It is the total amount: ')+'ul'
+        self.parameters['inject_dose'] = input('Input dose. It is the true amount (vg) like 1.00E12: ')
+        
         
         tmp = input('Input spot number. Press ENTER for default 1. Intput an integer: ')
         if tmp == '':

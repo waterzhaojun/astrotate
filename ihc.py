@@ -90,9 +90,28 @@ class Antibody(): # This class is good to use.
         
         self.temperature = utils.select('temperature: ', ['RT', '-4'])
 
+    def translate_name(self):
+        res = {}
+        if self.type == 'primary':
+            res['source'] = self.antibody.split('from')[1].replace(' ', '').lower()
+        elif self.type == 'secondary':
+            res['source'] = self.antibody.split(' ')[1].lower()
+            res['anti'] = self.antibody.split(' ')[3].lower()
+        return(res)
+
     def to_dict(self):
-        return({
-            'type':self.type, 'antibody':self.antibody, 
-            'concentration':self.concentration, 'duration': self.duration,
-            'temperature':self.temperature
-        })
+        res = {}
+        res['type'] = self.type
+        res['antibody'] = self.antibody
+        res['concentration'] = self.concentration
+        res['duration'] = self.duration
+        res['temperature'] = self.temperature
+        tmp = self.translate_name()
+        for key, value in tmp.items():
+            res[key] = value
+        return(res)
+        # return({
+        #     'type':self.type, 'antibody':self.antibody, 
+        #     'concentration':self.concentration, 'duration': self.duration,
+        #     'temperature':self.temperature
+        # })
