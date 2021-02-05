@@ -52,14 +52,28 @@ class Animal():
     def add_treatment(self, treatment):
         conn = server.connect_server()
         cur = conn.cursor()
+        
         cur.execute(
             """
             INSERT INTO surg_treatment
-            (animalid, date, time, method, operator, note, parameters)
-            VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')
-            """.format(self.animalid, treatment.date, treatment.time, treatment.method, treatment.operator, treatment.note, json.dumps(treatment.parameters))
+            (animalid, date, method, operator, note, parameters)
+            VALUES ('{}', '{}', '{}', '{}', '{}', '{}')
+            RETURNING serialid
+            """.format(self.animalid, treatment.date, treatment.method, treatment.operator, treatment.note, json.dumps(treatment.parameters))
         )
+        sid = cur.fetchone()
+        sid = sid[0]
+        print(sid)
         conn.commit()
+        if hasattr(self, 'time'):
+            cur.execute(
+                """
+                    UPDATE surg_treatment
+                    SET time = '{}'
+                    WHERE serialid = '{}'
+                """.format(self.time, sid)
+            )
+            conn.commit()
         conn.close()
         if treatment.method == 'PFA purfusion':
             self.terminate()

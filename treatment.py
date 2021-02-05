@@ -237,7 +237,8 @@ class Aavinject(Treatment):
         'AAV2/5-gfaABCD1-optoGq-EYFP',
         'AAV9.CAG.flex.GCaMP5s.WPRE.SV40',
         'PNS1.CAG.GCaMP6s',
-        'PNS1.CAG.DIO.GCaMP6s'
+        'PNS1.CAG.DIO.GCaMP6s',
+        'pAAV.hSyn.hChR2(H134R).EYFP'
     ]
 
     __inject_method_list__ = [

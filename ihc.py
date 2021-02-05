@@ -11,7 +11,7 @@ import numpy as np
 from astrotate import array, utils, treatment, surgery, config as cg
 import json
 
-tissue_list = ['dura', 'TG', 'brain', 'nerve', 'DRG', 'SpinalCord', 'muscle', 'skin']
+tissue_list = ['dura', 'TG', 'brain', 'nerve', 'DRG', 'SpinalCord', 'muscle', 'skin', 'mesentery','stomach', 'duodenum','colon']
 
 class Exp(cg.Experiment):
     def __init__(self):
