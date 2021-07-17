@@ -68,7 +68,8 @@ class Antibody(): # This class is good to use.
                 'DsRed from rabbit', 
                 'c-fos from rabbit',
                 'NeuN from mouse',
-                'GFP from chicken'
+                'GFP from chicken',
+                'avidin texas red'
             ]
             self.antibody = utils.select('=== which antibody ===', primary_list)
             
@@ -90,14 +91,16 @@ class Antibody(): # This class is good to use.
         
         self.temperature = utils.select('temperature: ', ['RT', '-4'])
 
-    def translate_name(self):
-        res = {}
-        if self.type == 'primary':
-            res['source'] = self.antibody.split('from')[1].replace(' ', '').lower()
-        elif self.type == 'secondary':
-            res['source'] = self.antibody.split(' ')[1].lower()
-            res['anti'] = self.antibody.split(' ')[3].lower()
-        return(res)
+    # def translate_name(self):
+    #     # deprecated
+    #     # I wanna simplify the antibody information. The source and anti is already included in antibody name, don't need to add again.
+    #     res = {}
+    #     if self.type == 'primary':
+    #         res['source'] = self.antibody.split('from')[1].replace(' ', '').lower()
+    #     elif self.type == 'secondary':
+    #         res['source'] = self.antibody.split(' ')[1].lower()
+    #         res['anti'] = self.antibody.split(' ')[3].lower()
+    #     return(res)
 
     def to_dict(self):
         res = {}
@@ -106,9 +109,9 @@ class Antibody(): # This class is good to use.
         res['concentration'] = self.concentration
         res['duration'] = self.duration
         res['temperature'] = self.temperature
-        tmp = self.translate_name()
-        for key, value in tmp.items():
-            res[key] = value
+        # tmp = self.translate_name()
+        # for key, value in tmp.items():
+        #     res[key] = value
         return(res)
         # return({
         #     'type':self.type, 'antibody':self.antibody, 

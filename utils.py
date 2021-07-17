@@ -71,6 +71,31 @@ def select(hellowords, array, defaultChoose = None, **kwargs):
 
     return(final)
 
+def select_from_list(hellowords, elementList, defaultChoose = None, **kwargs):
+    # Different from select, this function use a list, each element has two value. 
+    # First value is the value you want to return. 
+    # Second value is the description.
+    if (defaultChoose != None):
+        hellowords = hellowords + ' Press Enter for %s (%d) ' % (elementList[defaultChoose][1], elementList[defaultChoose][0])
+    print(hellowords)
+    for e in elementList:
+        print('%d ---> %s' % (e[0], e[1]))
+    yourchoice = input('Select by idx: ')
+    if yourchoice == '':
+        if defaultChoose != None:
+            final = elementList[defaultChoose][0]
+        else:
+            pass
+    else:
+        options = [x[0] for x in elementList]
+        if yourchoice in options:
+            final = yourchoice
+        else:
+            raise Exception('The choise is not exist. Please confirm')
+
+    return(final)
+
+
 def multi_select(hellowords, array):
     result = []
     flag = True
@@ -84,7 +109,12 @@ def multi_select(hellowords, array):
             flag = False
     return(result)
 
-
+def array2list(array, idxStartNum):
+    # This function is to convert your array to a list in which each element has two value, first one is its idx value, second is the description which is the raw array.
+    res = []
+    for i in range(len(array)):
+        res.append([idxStartNum + i, array[i]])
+    return(res)
 
 def select_from_dict(hellowords, dict, **kwargs):
     # This function helps you use input function to select a key value from a dict.

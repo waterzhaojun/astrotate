@@ -128,7 +128,11 @@ class Treatment():
 
         self.input_time()
         self.input_date()
-        self.operator = utils.select('Treatment operator: ', cg.operator, 0)
+        self.operator = utils.select_from_list(
+            'Treatment operator: ', 
+            utils.array2list(cg.operator, 1), 
+            0
+        )
         self.parameters = {}
         self.note = input('input your note for %s treatment: ' % self.method)
 
@@ -179,12 +183,15 @@ class Sham(Treatment):
 class OptoStimulation(Treatment):
     def __init__(self):
         super().__init__('opto stimulation')
+        self.parameters['device'] = utils.select('Choose stimulator: ', ['M470F3', 'M880F2'])
         self.parameters['duration'] = input('Stimulation duration (sec, input an int): ')+'sec'
         self.parameters['power percentage'] = int(input('opto stimulation power. (input an int number for percentage int part):' ))
         self.parameters['stimulation_type'] = utils.select('Choose stimulation type: ', ['continue', 'discrete'])
         if self.parameters['stimulation_type'] == 'discrete':
             self.parameters['freq']= input('stimulation frequency. unit is Hz. input a float number: ')+'Hz'
             self.parameters['width']= input('Width of the stimulation, unit is sec. input a float number: ')+'sec'
+            self.parameters['on_trial_duration']= input('If you stimulation mode have a rest between trials, this is how long a trial on is. Unit is sec. input a float number: ')+'sec'
+            self.parameters['off_trial_duration']= input('If you stimulation mode have a rest between trials, this is how long a rest on is. Unit is sec. input a float number: ')+'sec'
     
 
 class CSD(Treatment):
@@ -238,7 +245,8 @@ class Aavinject(Treatment):
         'AAV9.CAG.flex.GCaMP5s.WPRE.SV40',
         'PNS1.CAG.GCaMP6s',
         'PNS1.CAG.DIO.GCaMP6s',
-        'pAAV.hSyn.hChR2(H134R).EYFP'
+        'pAAV.hSyn.hChR2(H134R).EYFP',
+        'PNS1.CAG.flex.GCaMP8s'
     ]
 
     __inject_method_list__ = [
@@ -300,7 +308,7 @@ class Drug(Treatment):
                      'TTX', 'BIBN', 'HET', 'DAB', 'Napro', 'FLCT', 'PPADS', 
                      'Ozagrel', 'Levcro', 'soup', 'A10606120', 'Prob', 'TNP-ATP', 
                      'saline', 'CBN4', 'SNP', 'GAP26', 'SC560', 'AL8810', 'CNO', 
-                     'anti CGRP', 'Tamoxipen']
+                     'anti CGRP', 'Tamoxipen', '48/80']
         apply_method_list = ['ip', 'topic', 'subcutaneous', 'iv', 'cortex', 'ic', 'icv']
         super().__init__('drug apply')
         self.parameters['activate_drug'] = utils.select('Choose treated drug: ', drug_list)
